@@ -1,0 +1,21 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Analysis Wizard - Select a Course</h3>
+</%def>
+<br/>
+<br/>
+Your Courses:</br>
+<br/>
+<ul>
+% for course in c.user.courses:
+	<li>
+		<a href="${h.url_for(controller='analysis', action='select_filesets', id=course.id)}">${course.name}</a>
+	</li>
+% endfor
+</ul>
+
+<%def name="title()">Select a Course - Analysis Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

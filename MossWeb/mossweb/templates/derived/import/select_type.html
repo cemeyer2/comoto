@@ -1,0 +1,19 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Import Wizard - Select Import Type</h3>
+</%def>
+
+<ul>
+<li>
+<a href="${h.url_for(controller='import', action='svn_import', id=c.offering.id, solution=c.solution)}">Import from SVN</a>
+</li>
+<li>
+<a href="${h.url_for(controller='import', action='archive_import', id=c.offering.id, solution=c.solution)}">Import from uploaded archive file</a>
+</li>
+</ul>
+
+<%def name="title()">Select Import Type - Import Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

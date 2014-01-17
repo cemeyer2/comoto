@@ -1,0 +1,40 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Manage Semesters</h3>
+</%def>
+Existing Semesters:<br />
+<ul>
+% for semester in c.semesters:
+<li>
+${semester.to_str()}
+</li>
+% endfor
+</ul>
+<br /><br />
+Add new semester:<br />
+${h.form_start(h.url_for(controller='semester', action='new_semester', id=None), method="POST")}
+    ${h.field(
+		"Season",
+		h.select(
+			"season",
+			id='season',
+			options = ['Fall', 'Spring', 'Summer'],
+			selected_values = [],
+		),
+	)}
+    ${h.field(
+		"Year",
+		h.select(
+			"year",
+			id='year',
+			options = range(2000,2100,1),
+			selected_values = [],
+		),
+	)}
+    ${h.field(field=h.submit(value="Create Semester", name='submit'))}
+${h.form_end()}
+
+<%def name="js()">
+    ${parent.js()}
+</%def>

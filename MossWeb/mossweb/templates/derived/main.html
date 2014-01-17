@@ -1,0 +1,26 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Welcome to the Collaboration Modeling Toolkit</h3>
+</%def>
+Welcome to CoMoTo, the Collaboration Modeling Toolkit. Use the links above or to the left to navigate the site.
+<br /><br />
+On this page, each course that you are affiliated with is listed. Clicking on
+a course will allow you to manage the semesters which that course is offered as well as manage each offering. You can link
+each offering to the university course roster database then view the rosters for that offering.
+<br /><br /><br /><br />
+<b>Your Courses:</b></br>
+<br/>
+<ul>
+% for course in c.courses:
+<li>
+<a href="${h.url_for(controller='course', action='manage_offerings', id=course.id)}">${course.name}</a>
+</li>
+% endfor
+</ul>
+
+<br /><br />
+
+<%def name="js()">
+        ${parent.js()}
+</%def>

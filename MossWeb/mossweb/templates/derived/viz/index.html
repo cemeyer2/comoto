@@ -1,0 +1,190 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="css_includes()">
+
+    ${parent.css_includes()}
+
+    <!-- CSS Files -->
+    <link type="text/css" href="${h.url_for('/css/viz/viz.css')}" rel="stylesheet"/>
+    <link type="text/css" href="${h.url_for('/css/viz/progressPopup.css')}" rel="stylesheet"/>
+    <link type="text/css" href="${h.url_for('/css/viz/controls.css')}" rel="stylesheet"/>
+    <link type="text/css" href="${h.url_for('/css/viz/treeView.css')}" rel="stylesheet"/>
+    <link type="text/css" href="${h.url_for('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css')}" rel="stylesheet"/>
+
+</%def>
+
+
+<%def name="page()">
+
+
+    <table width="100%" cellpadding="0">
+        <tr>
+            <td id="left-sidebar">
+                <h3 class="title">Assignments</h3><br/>
+                <div>
+                    <ul id="analysisBrowser" class="courseList"></ul>
+                </div>
+                <br/><br/>
+                ${h.facebox('Missing Assignments?',"In order for an analysis to appear in the visualization menu, it needs to be pruned to a specific semester. This can be done in the textual view of the analysis under the filtering options.")}
+                <br/><br/>
+
+                <h3 class="title" id="submissionListTitle">Submission List</h3>
+                <div>
+                    <ul id="submissionList"></ul>
+                </div>
+            </td>
+            <td>
+                <center>
+                <div id="content">
+                    <div class='gallery' id='chart' oncontextmenu="return false;"></div>
+                    <h1 id='preloadMessage'>select an assignment from the sidebar</h1>
+                </div>
+                </center>
+            </td>
+
+            <td id="right-sidebar">
+                <h3 class="title">Controls</h3><br/>
+                <div class='post'>
+
+                    Minimum Edge Weight: &nbsp;&nbsp;&nbsp;&nbsp; <span id="currentMinimumEdgeWeight">0</span>
+                    <div class="control" name="minimumEdgeWeight" id="minimumEdgeWeightSlider"></div>
+
+                    Toggle Components:<br/><br/>
+                    <div class='post'>
+                        <label>
+                            <input type="checkbox" class="control checkbox" name="includePastSemesters" id="includePastSemestersCheckbox"/>
+                            Include Past Semesters
+                        </label>
+                        <label>
+                            <input type="checkbox" class="control checkbox" name="includeSingletons" id="includeSingletonsCheckbox"/>
+                            Include Singletons
+                        </label>
+                        <label>
+                            <input type="checkbox" class="control checkbox" name="includePartnerEdges" id="includePartnerEdgesCheckbox" checked/>
+                            Include Partner Edges
+                        </label>
+                        <label>
+                            <input type="checkbox" class="control checkbox" name="includeSolution" id="includeSolutionCheckbox" checked/>
+                            Include Solution
+                        </label>
+                        <label>
+                            <input type="checkbox" class="control checkbox" name="anonymousGraph" id="anonymousGraphCheckbox" checked/>
+                            Anonymous Graph
+                        </label>
+                        <label>
+                            <input type="checkbox" class="control checkbox" name="includePastSemesters" id="useFisheyeCheckbox"/>
+                            Fisheye on Focus
+                        </label>
+                    </div>
+                </div>
+                <center>
+                    <input type="button" class="btn control" name="updateGraph" id="updateGraphButton" value="Update Graph" onclick="updateGraph()"/>
+                    <br/><br/>
+                    <div id='exportContainer'>
+                            <form name='exportForm' id='exportForm' method='post' action="${h.url_for(controller='viz', action='export')}">
+                                <input type='hidden' name='svg' id='exportSVG'/>
+                                <input type="button" class="btn control" name="export" id="exportButton" value="Export Image" onclick="exportImage()"/>
+                            </form>
+                    </div>
+                </center>
+
+                <div id='legend'>
+                    <h3 class="title">Legend</h3><br/>
+                    <div class='post'></div>
+                </div>
+                <br/>
+            </td>
+        </tr>
+    </table>
+</%def>
+
+<%def name="title()">Viz - ${parent.title()}</%def>
+<%def name="sidebar()">
+
+    <!-- The popup to display for loading a class -->
+    <div id="loadingPopup">
+        <div class="post">
+            <h3 class="title">Loading</h3><br/>
+            <div class="entry">
+                <center>
+                    <div id="loadingStatusBox">
+                        <table>
+                            <tr>
+                                <td><img src="${h.url_for('/viz_images/busy.gif')}"/></td>
+                                <td id="loadingStatus"></td>
+                            </tr>
+                        </table>
+                        <br/>
+                    </div>
+                    <div id="loadingErrorBox"><div id="loadingError"></div><br/></div>
+                </center>
+            </div>
+            <input type=button id="okButton" class="btn" value="Ok" onclick="hideLoadingPopup();"/>
+        </div>
+    </div>
+    <div id="backgroundPopup"></div>
+</%def>
+<%def name="js()">
+
+    ${parent.js()}
+
+    <!-- Bootstrap JS include -->
+    ${h.javascript_link(h.url_for('/bootstrap/js/bootstrap.js.min.js'))}
+    ${h.javascript_link(h.url_for('/bootstrap/js/bootstrap-tooltip.js.min.js'))}
+    ${h.javascript_link(h.url_for('/bootstrap/js/bootstrap-popover.js.min.js'))}
+
+
+    <!-- Jquery & d3 includes -->
+    ${h.javascript_link("https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js")}
+    ${h.javascript_link(h.url_for('/d3/d3.js.min.js'))}
+    ${h.javascript_link(h.url_for('/d3/d3-fisheye.js.min.js'))}
+    ${h.javascript_link(h.url_for('/jquery_treeview/jquery.treeview.js.min.js'))}
+
+    <!-- Viz scripts -->
+    ${h.javascript_link(h.url_for('/viz_scripts/controls.js.min.js'))}
+    ${h.javascript_link(h.url_for('/viz_scripts/graph.js.min.js'))}
+    ${h.javascript_link(h.url_for('/viz_scripts/initialize.js.min.js'))}
+
+    <!-- Handles UI effects -->
+    ${h.javascript_link(h.url_for('/viz_scripts/ui/load.js.min.js'))}
+    ${h.javascript_link(h.url_for('/viz_scripts/ui/graph.js.min.js'))}
+    ${h.javascript_link(h.url_for('/viz_scripts/ui/graph/colors.js.min.js'))}
+    ${h.javascript_link(h.url_for('/viz_scripts/ui/graph/matchPopups.js.min.js'))}
+    ${h.javascript_link(h.url_for('/viz_scripts/ui/graph/submissionPopups.js.min.js'))}
+
+
+    <script type charset="text/javascript">
+
+        jQuery(document).ready(function($) {
+
+            var preload_assignment_id = ${c.preload_assignment_id};
+            var preload_offering_id = ${c.preload_offering_id};
+            var preload_course_id = ${c.preload_course_id};
+
+            // Remove padding on content div
+            $('#content').css({
+                padding: '0px'
+            });
+
+            // Load an assignment directly if passed paramters to do so
+            var postFunc = function(){
+                if(preload_assignment_id >= 0 && preload_offering_id >= 0){
+					$("#courseNode"+preload_course_id+"-hitarea").click();
+                	$("#offeringNode"+preload_offering_id+"-hitarea").click();
+                    loadAssignment(preload_assignment_id, preload_offering_id);
+                }
+            };
+
+            // Begin fetching the course data for this user
+            fetchCourses(postFunc);
+
+            // Initialize the controls
+            initializeControls();
+
+            // Hide the popups
+            $('.graphPopup').hide();
+        });
+
+    </script>
+
+</%def>

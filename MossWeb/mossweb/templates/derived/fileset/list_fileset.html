@@ -1,0 +1,50 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">View File Set - ${c.fileset.name} - ${c.fileset.offering.course.name} ${c.fileset.offering.semester.season} ${c.fileset.offering.semester.year}</h3>
+</%def>
+Files:<br />
+<ul>
+% for submission in c.fileset.submissions:
+	<li>
+		<a name="${submission.id}"></a>
+% if hasattr(submission, "student"):
+		<a href="${h.url_for(controller="history", action="view", id=submission.student.netid)}">${submission.student.netid}</a>
+% elif submission.row_type == 'solutionsubmission':
+		Solution
+% elif submission.row_type == 'basesubmission':
+		Base files
+% endif
+ - ${h.facebox_ajax("download", h.url_for(controller="fileset", action="download_submission_ajax", id=submission.id))}
+ - <a href="#" onclick="javascript:confirmDeleteSubmission('${h.url_for(controller='fileset', action='remove_submission', id=submission.id)}')">delete</a>
+		<br />
+		<ul>
+% for file in submission.submissionFiles:
+			<li>
+				<a href="${h.url_for(controller='fileset', action='view_file', id=file.id)}">${file.name}</a> - <a href="#" onclick="javascript:confirmDeleteFile('${h.url_for(controller='fileset', action='remove_file', id=file.id)}')">remove</a>		
+			</li>
+% endfor
+		</ul>
+	</li>
+% endfor
+</ul>
+<%def name="title()">View File Set - ${parent.title()}</%def>
+<%def name="js()">
+<script>
+			var confirmDeleteFile = function(url) {
+				confirmDelete(url, "Are you sure you want to delete this file? This cannot be undone.");
+			};
+			
+			var confirmDeleteSubmission = function(url) {
+				confirmDelete(url, "Are you sure you want to delete this submission? This cannot be undone.");
+			};
+			
+			var confirmDelete = function(url, text) {
+				var shouldDelete = confirm(text);
+				if(shouldDelete) {
+					window.location = url;
+				}
+			};
+		</script>
+        ${parent.js()}
+</%def>

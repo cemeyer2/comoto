@@ -1,0 +1,77 @@
+<%
+div_id = h.__rand_string(32)
+div_id2 = h.__rand_string(32)
+
+engine_help =   "There are several graph layout engines that can be chosen from to layout the generated graph:"
+engine_help += "<ul>"
+engine_help += "<li><b>neato</b> - draws undirected graphs using 'spring' models</li>"
+engine_help += "<li><b>fdp</b> - draws undirected graphs using a force-directed 'spring' model</li>"
+engine_help += "<li><b>sfdp</b> - draws undirected graphs using a multi-scale force-directed 'spring' model, efficient for large graphs</li>"
+engine_help += "<li><b>twopi</b> - draws graphs using a radial layout</li>"
+engine_help += "<li><b>circo</b> - craws graphs using a circular layout</li>"
+engine_help += "</ul>"
+%>
+
+<div id="${div_id}">
+
+<h3 class="title">Generate a Static Graph</h3>
+
+<label for="threshold${div_id}">Threshold:</label>
+${h.select(
+			"threshold"+div_id,
+			id='threshold'+div_id,
+			options =range(0,101,1),
+			selected_values = [0]
+			)}
+${h.cluetip("What is this?","Threshold","This defines the minimum score that will cause an edge to be shown in the generated graph")}
+<br />
+<label for="includeSolution${div_id}">Include Solution:</label>
+${h.select(
+			"includeSolution"+div_id,
+			id='includeSolution'+div_id,
+			options = [(1,"Yes"),(0,"No")],
+			selected_values = [1]
+			)}
+${h.cluetip("What is this?","Include Solution","This defines whether or not the solution (if present in the analysis) will be shown in the generated graph")}
+<br />
+<label for="anonymize{div_id}">Anonymous:</label>
+${h.select(
+			"anonymize"+div_id,
+			id='anonymize'+div_id,
+			options = [(1,"Yes"),(0,"No")],
+			selected_values = [0]
+			)}
+${h.cluetip("What is this?","Anonymous","This defines whether or not generated graph will be anonymized.")}
+<br />
+<label for="singletons{div_id}">Include Singletons:</label>
+${h.select(
+			"singletons"+div_id,
+			id='singletons'+div_id,
+			options = [(1,"Yes"),(0,"No")],
+			selected_values = [0]
+			)}
+${h.cluetip("What is this?","Singletons","This defines whether or not singletons will appear in the generated graph. Singletons are defined in this context to be students that were part of the analysis but did not appear in any matches.")}
+<br />
+<label for="layoutEngine{div_id}">Layout Engine:</label>
+${h.select(
+			"layoutEngine"+div_id,
+			id='layoutEngine'+div_id,
+			options = ['neato','fdp','sfdp','twopi','circo'],
+			selected_values = ['neato']
+			)}
+${h.cluetip("What is this?","Layout Engine",engine_help)}
+<br />
+<br />
+	<input type="button" class="btn" value="Submit Graph For Processing" onclick="processGraph('${div_id}')"/>
+	${h.hidden(name="assignment_id", id="assignment_id"+div_id, value=c.assignment.id)}
+	
+	<br /><br />
+		Number of graphs waiting in queue to be processed: 
+	<div id="${div_id2}">
+		${c.queue_depth}
+	</div>
+	
+</div>
+<script>
+	$('a.load-local').cluetip({local:true, cursor: 'pointer'});
+</script>

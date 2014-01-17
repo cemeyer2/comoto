@@ -1,0 +1,46 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">List Complete Analyses</h3>
+</%def>
+<br/>
+<br/>
+Your completed analyses:</br>
+<br/>
+<ul>
+% for course in c.user.courses:
+	<li>
+		${course.name}<br />
+		<ul>
+% for assignment in sorted(course.assignments, cmp=lambda x, y: cmp(x.analysis, y.analysis)):
+% if assignment.analysis is not None:
+% if assignment.analysis.complete == True:
+			<li>
+				<a href="${h.url_for(controller='view_analysis', action='view', id=assignment.id)}">${assignment.name}</a>
+% if assignment.analysis.mossAnalysis.prunedOffering is not None:
+                 - <a href="${h.url_for(controller='viz', action='index', id=assignment.id)}">viz</a>
+% endif
+                 - ${str(assignment.analysis.timestamp)}
+				 - <a href="#" onclick="javascript:confirmDelete('${h.url_for(controller='view_analysis', action='delete', id=assignment.id)}')">delete</a>
+			</li>
+% endif
+% endif
+% endfor
+		</ul>
+	</li>
+% endfor
+</ul>
+
+<%def name="title()">List Complete Analyses - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+		
+		<script>
+			var confirmDelete = function(url) {
+				var shouldDelete = confirm("Are you sure you want to delete this analysis? This cannot be undone.");
+				if(shouldDelete) {
+					window.location = url;
+				}
+			};
+		</script>
+</%def>

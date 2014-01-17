@@ -1,0 +1,37 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Analysis Wizard - Create an Assignment</h3>
+</%def>
+
+${h.form_start(h.url_for(controller='analysis', action='select_type', id=None), method="POST")}
+    ${h.field("Name for assignment", h.text(name='name'), required=True)}
+	${h.field("Course", h.literal(c.filesets[0].offering.course.name))}
+	
+% for fileset in c.filesets:
+	${h.field("File Set", h.literal(str(fileset.name) + " - " + fileset.offering.to_str()))}
+% endfor
+% for fileset in c.base_filesets:
+	${h.field("Base File Set", h.literal(str(fileset.name) + " - " + fileset.offering.to_str()))}
+% endfor
+	
+	${h.field(
+		"Language",
+		h.select(
+			"language",
+			id='language',
+			options = ["c", "cc", "java", "ml", "ocaml", "ruby", "pascal", "ada", "lisp", "scheme", "haskell", "fortran", "ascii", "vhdl", "perl", "matlab", "python", "mips", "prolog", "spice", "vb", "csharp", "modula2", "a8086", "javascript", "plsql", "verilog", "tcl", "hc12", "asm"],
+			selected_values = []
+		),
+	)}
+	
+	${h.hidden('filesets', c.fileset_ids)}
+	${h.hidden('base_filesets', c.base_fileset_ids)}
+    ${h.field(field=h.submit(value="Continue", name='submit'))}
+${h.form_end()}
+
+
+<%def name="title()">Create an Assignment - Analysis Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

@@ -1,0 +1,3 @@
+include mossweb/config/deployment.ini_tmpl
+recursive-include mossweb/public *
+recursive-include mossweb/templates *

@@ -1,0 +1,29 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Request an Account</h3>
+</%def>
+
+% if session.has_key('flash'):
+    <div id="flash" style="color:red;"><p>${session.get('flash')}</p></div>
+    <%
+        del session['flash']
+        session.save()
+    %>
+% endif
+
+
+Either there is no CoMoTo account or it is disabled for username: ${c.user.name}<br /><br />
+
+Please fill out the following form to request an account or have it enabled:<br /><br />
+${h.form_start(h.url_for(controller='users', action='request_enable', id=c.user.id), method="POST")}
+    ${h.field("Username", h.literal(c.user.name))}
+	${h.field("Requested Course(s)", h.text(name='requested_course_name'))}
+
+    ${h.field(field=h.submit(value="Request Account", name='submit'))}
+${h.form_end()}
+
+<%def name="title()">Request an Account - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

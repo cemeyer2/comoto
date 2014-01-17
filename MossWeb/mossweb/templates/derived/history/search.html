@@ -1,0 +1,41 @@
+<%!
+from mossweb.lib import history_helpers as hh
+%>
+
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title"Search For Students</h3>
+</%def>
+
+<label for="netid">Netid or Last Name:</label>
+<input id="netid" name="netid" class="input-medium search-query" onkeyup="search()" type="text">
+<input type="button" class="btn" name="search" value="Search" onclick="search()"/>
+<br /><br />
+<div id='results'>
+</div>
+
+<%def name="title()">Search For Students - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+	
+	<script type="text/javascript">
+		
+		var Dom = YAHOO.util.Dom;
+		
+		var search = function() {
+			var callback = {
+				success: function(o) {
+					Dom.get('results').innerHTML = o.responseText;
+				},
+				failure: function(o) {
+					//fail silently
+					//alert("Failed to retrieve required information.");
+				}
+			};
+			var url = "${h.url_for(controller="history", action="filter")}" + "/" + Dom.get('netid').value;
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};
+		
+		</script>
+</%def>

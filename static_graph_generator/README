@@ -1,0 +1,46 @@
+prerequsities:
+
+software:
+* python 2.4 or newer
+* graphviz
+* perl
+
+python eggs:
+* pysvn
+* pygraphviz
+* graphviz
+* BeautifulSoup
+
+This code has only been tested on Linux (CentOS 5.5 and Ubuntu 10.04 LTS), but should work on any *nix (OSX, BSD, etc)
+
+
+
+instructions for running this code:
+
+1. generate a roster file
+	a. edit getroster.sh and modify the 2 variables at the top of the file
+	b. run getroster.sh from the terminal
+
+2. generating the graphs
+	a. edit the .sh file for the MP you want to run to include the proper file names, roster file, and svn root
+	b. run the .sh file from the terminal. it will take a while to run, usually over an hour, but it all depends on your system specs. Don't be surprised if it uses 100% cpu when generating the graphs
+	c. the output will be placed in a directory named after the mp you are running
+
+Known issues:
+
+* on ubuntu, pysvn does not read subversion credentials properly from the svn store, so you need to modify the python files to include your login credentials. ensure that you erase your credentials from the file when you are done with it. To do this, there are two things that need to be done:
+	1. at the top of the python file, below the imports, copy and paste the following code:
+	def get_login(realm, username, may_save):
+		return True, "netid_here", "password_here", True
+
+	replace your netid in the quotes where it says netid_here and your AD password where it says password here
+
+	2. on or about line 132 in the sigh files and line 24 in roster.py, there is a declaration like:
+
+	client = pysvn.Client()
+	
+	right below it, with the same indentation, copy/paste the following line:
+
+	client.callback_get_login = get_login
+
+	This will instruct the svn library to use your credentials in the file rather than searching for them in the svn store (usually in ~/.subversion on Linux). I think the problem is that on newer Linuxes svn stores credentials in the gnome keyring when possible, which this library does not yet support.

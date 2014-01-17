@@ -1,0 +1,43 @@
+<%inherit file="/base/index.html" />
+
+<%def name="heading()">
+    <h1 class="main">Analysis Wizard - Moss Options</h1>
+</%def>
+
+${h.form_start(h.url_for(controller='analysis', action='select_type'), method="POST")}
+    ${h.field("Name for assignment", h.literal(c.assignment.name), required=True)}
+	${h.field("Course", h.literal(c.assignment.filesets[0].offering.course.name))}
+	
+% for fileset in c.assignment.filesets:
+	${h.field("File Set", h.literal(str(fileset.name) + " - " + str(fileset.offering.course.name) + " " + str(fileset.offering.semester.season) + " " + str(fileset.offering.semester.year)))}
+% endfor
+
+	${h.field(
+		"Max matches a student will appear in",
+		h.select(
+			"moss_repeat_count",
+			id='moss_repeat_count',
+			options = range(1,101,1),
+			selected_values = [c.moss_repeat_count]
+		),
+	)}
+	
+	${h.field(
+		"Language",
+		h.select(
+			"language",
+			id='language',
+			options = ["c", "cc", "java", "ml", "ocaml", "ruby", "pascal", "ada", "lisp", "scheme", "haskell", "fortran", "ascii", "vhdl", "perl", "matlab", "python", "mips", "prolog", "spice", "vb", "csharp", "modula2", "a8086", "javascript", "plsql", "verilog", "tcl", "hc12", "asm"],
+			selected_values = []
+		),
+	)}
+	
+	${h.hidden('assignment_id', c.assignment.id)}
+    ${h.field(field=h.submit(value="Continue", name='submit'))}
+${h.form_end()}
+
+
+<%def name="title()">Moss Options - Analysis Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

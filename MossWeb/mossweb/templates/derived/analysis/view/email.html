@@ -1,0 +1,23 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Email Students</h3>
+</%def>
+
+${h.form_start(h.url_for(controller='view_analysis', action='do_email_students', id=None), method="POST", name="email_form", id="email_form")}
+
+% for student in c.students:
+	${h.field("Send message to "+student.displayName+" ("+student.netid+")", h.checkbox(name=student.id, checked=True))}
+% endfor
+	
+	${h.field("Message Subject", h.text(name='subject'),required=True)}
+	${h.field("Message Body", h.textarea(name='body', cols=50, rows=10), required=True)}
+    ${h.field(field=h.submit(value="Send Message", name='submit'))}
+	${h.hidden(name="student_ids", value=c.student_ids_str)}
+	${h.hidden(name="assignment_id", value=c.assignment_id)}
+${h.form_end()}
+
+<%def name="title()">Email Students - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

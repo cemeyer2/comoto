@@ -1,0 +1,328 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Filter Files</h3>
+</%def>
+${h.form(h.url_for(controller='import', action='import_files'), multipart=True, name='filter_form', id='filter_form')}
+<fieldset>
+	
+	<label for="filter_by">Filter By</label><br />
+	${h.select(
+			"filter_by",
+			id='filter_by',
+			options = ["none","extension","name"],
+			selected_values = [],
+			onchange="toggleFields();",
+			)}
+	<form:error name="filter_by"/>
+	${h.facebox("help", "Importing files into CoMoTo is a two step process. You have already completed step 1. Step 2 allows you to filter out all the files detected by step 1 and only import those which you are interested in. There are three types of filters that you can apply:<br /><ul><li><b>None</b> - All the files listed below will be imported</li><li><b>File Extension</b> - Only files with the extensions you provide will be imported. For example, to import on C++ source and header files, you would enter two extensions, 'cpp' and 'h'</li><li><b>File Name</b> - Using this filter, you can supply as many file names as you wish to be imported. File names will be matched exactly.</li></ul><br /><br />As you apply filters, the list of files below will update below according to your filter choices. Files in green will pass the filter and will be imported. Files is red will be rejected by the filter and will not be imported.")}
+	<br />
+
+## extension filter fields
+	<div id="extension_fields">
+	
+	<div id="extensions">
+	
+	<div id="extensionset0">
+	<label for="extension0">Extension</label><br />
+	${h.text('extension0', id="extension0")}<br />
+	</div>
+	
+	</div>
+	
+	${h.hidden('extension_count', '1', id='extension_count')}
+	<br /><br />
+	<input type="button" class="btn" onclick="add_field();" value="Add Extension" />
+	<input type="button" class="btn" onclick="remove_field();" value="Remove Extension" />
+	<br /><br />
+	</div>
+	
+##	name filter fields
+	<div id="name_fields">
+	
+	<div id="names">
+	
+	<div id="nameset0">
+	<label for="name0">Name</label><br />
+	${h.text('name0', id="name0")}<br />
+	</div>
+	
+	</div>
+	
+	${h.hidden('name_count', '1', id='name_count')}
+	<br /><br />
+	<input type="button" class="btn" onclick="add_field();" value="Add Name" />
+	<input type="button" class="btn" onclick="remove_field();" value="Remove Name" />
+	<br /><br />
+	</div>
+<br /><br />
+<label for="meta">Partners file name:</label><br />
+	${h.select(
+			"meta",
+			id='meta',
+			options = c.unique_files,
+			selected_values = [],
+			)}
+	${h.facebox("help", "Selecting a file name from this list will denote all files matching that name as files that list partners. A partners file contains the netids of students who worked together as partners. There is no predefined format for this file, but a common format is one netid per line. Partners will only be denoted in the system if the netid of each partner for a given submission matches a netid that is also included in this file set.")}
+	<br />
+<br /><br />
+</fieldset>
+${h.hidden('regex', '', id='regex')}
+${h.hidden('fileset_id', c.fileset.id, id='fileset_id')}
+${h.submit(name="action", value="Apply Filter", id='filter_submit')}
+
+${h.end_form()}
+<br/><br/>
+
+Files Detected:<br/>
+<ul id="files_list">
+% for filename in c.files:
+	<li>
+		${filename}
+	</li>
+% endfor
+</ul>
+
+<%def name="title()">Filter Files - ${parent.title()}</%def>
+<%def name="js()">
+    ${parent.js()}
+
+	<script type="text/javascript">
+		var Dom = YAHOO.util.Dom;
+		var timer = {};
+		var typing_timeout = 500; //time from when user stops typing until we recompute the filter
+	
+		/**
+		* recomputes the filter and applies it to the files list
+		*/
+		var recompute_filter = function () {
+			var files = Dom.getChildren('files_list');
+			var type = Dom.get('filter_by').value; //the value of the select box to determine filter type
+			/**
+			* helper function to compute a regular expression based off the user's selections
+			*/
+			var compute_regex = function () {
+				var regex = "";
+				var regexstr = ""
+				var i = 0;
+				
+				if(type == "name") { //filtering by file name
+					var count = Dom.get('name_count').value; //the number of files in the filter
+					for(i; i < count; i=i+1) {
+						name = Dom.get('name'+i).value; //grab each file name supplied
+						if(name.length > 0) { //only add it to the regex if its length is greater than zero, so we dont end up matching everything
+% if len(c.fileset.subdir) > 0:
+							regex = regex + "(${c.fileset.subdir}/"+name+")$";
+							regexstr = regexstr + "(${c.fileset.subdir}/"+name+")$";
+% else:
+							regex = regex + "("+name+")$";
+							regexstr = regexstr + "("+name+")$";
+% endif
+							if(i < count-1 && Dom.get('name'+(i+1)).value.length > 0) { //add a separator bar iff we are not looking at the last file name and if the next file to look at has length > 0, this prevents us from matching everything
+								regex = regex+"|"; //since we are matching exact strings, the regex is just the or of the supplied names
+								regexstr = regexstr+"|"
+							}
+						}
+					}
+				} else if( type == "extension") { //filtering by extension, slightly less commented since you can get the idea from above
+					var count = Dom.get('extension_count').value;
+					for(i; i < count; i=i+1) {
+						extension = Dom.get('extension'+i).value;
+						if(extension.length > 0) {
+% if len(c.fileset.subdir) > 0:
+							regex = regex + "(${c.fileset.subdir}/.*\\."+extension+")$"; //expression for each extension is like "(\.cpp)$" for c+ files, "\." is match a period, "cpp" is the extension, "$" means must end with
+							regexstr = regexstr + "(${c.fileset.subdir}/.*\\."+extension+")$";
+% else:
+							regex = regex + "(.*\\."+extension+")$"; //expression for each extension is like "(\.cpp)$" for c+ files, "\." is match a period, "cpp" is the extension, "$" means must end with
+							regexstr = regexstr + "(.*\\."+extension+")$";
+% endif
+							if(i < count-1 && Dom.get('extension'+(i+1)).value.length > 0) {
+								regex = regex+"|";
+								regexstr = regexstr+"|";
+							}
+						}
+					}
+				}
+				Dom.get('regex').value = regexstr;
+				return new RegExp(regex);
+			};
+			/**
+			* helper function to color a HTMLElement green
+			*/
+			var color_green = function (elem) {
+				Dom.setStyle(elem, 'color', 'green');
+			};
+			/**
+			* helper function to color a HTMLElement red
+			*/
+			var color_red = function (elem) {
+				Dom.setStyle(elem, 'color', 'red');
+			};
+			
+			//actually do the coloring
+			var i = 0;
+			if(type == "none") { //no filter applied, color everything green
+				for(i; i < files.length; i=i+1) {
+					color_green(files[i]);
+				}
+			} else { //some filter applied
+				var regex = compute_regex(); //get the regex from the user's input
+				for(i; i < files.length; i=i+1) {
+					var trimmed = files[i].innerHTML.replace(/^\s+|\s+$/g, '');
+					if (regex.test(trimmed)) { //color based on matches
+						color_green(files[i]);
+					} else {
+						color_red(files[i]);
+					}
+				}
+			}
+			
+		};
+		
+		var keyup_handler = function () {
+			clearTimeout(timer);
+			timer = setTimeout(recompute_filter, typing_timeout);
+		};
+		
+		
+		var hide = function(id) {
+        	Dom.setStyle(id, 'display', 'none');
+    	};
+		
+		var show = function(id) {
+        	Dom.setStyle(id, 'display', 'block');
+    	};
+		
+		var toggleFields = function() {
+			var type_element = Dom.get('filter_by');
+			var type = type_element.value;
+			if(type == "none") {
+				hide("extension_fields");
+				hide("name_fields");
+			} else if(type == "extension") {
+				show("extension_fields");
+				hide("name_fields");
+			} else if(type == "name") {
+				hide("extension_fields");
+				show("name_fields");
+			}
+			recompute_filter();
+		};
+		
+		var attach_typing_listener = function (elem) {
+			YAHOO.util.Event.removeListener(elem, "keyup");
+			YAHOO.util.Event.addListener(elem, "keyup", keyup_handler);
+		};
+		
+		var attach_typing_listeners = function () {
+			var attach_typing_listener = function (elem) {
+				YAHOO.util.Event.removeListener(elem, "keyup");
+				YAHOO.util.Event.addListener(elem, "keyup", keyup_handler);
+			};
+			var i = 0;
+			var count = Dom.get('name_count').value; //the number of files in the filter
+			for(i; i < count; i=i+1) {
+				elem = Dom.get('name'+i)
+				attach_typing_listener(elem);
+			}
+			i = 0;
+			count = Dom.get('extension_count').value;
+			for(i; i < count; i=i+1) {
+				elem = Dom.get('extension'+i);
+				attach_typing_listener(elem);
+			}
+		};
+		
+		var add_field = function() {
+			var type_element = Dom.get('filter_by');
+			var type = type_element.value;
+			var old_vals = [];
+			if(type == "name") {
+				var count = Dom.get('name_count');
+				var old = parseInt(count.value);
+				var new_index = old+1;
+				var i = 0;
+				for(i; i < old; i=i+1) {
+					old_vals[i] = Dom.get('name'+i).value;
+				}
+				count.value = new_index;
+				var field = "<div id='nameset"+old+"'><label for='name"+old+"'>Name</label><br /><input id='name"+old+"' name='name"+old+"' type='text' /><br /></div>";
+				var elem = Dom.get("names");
+				elem.innerHTML = elem.innerHTML + field;
+				old_vals[old] = "";
+				i = 0;
+				for(i; i < count.value; i=i+1) {
+					Dom.get('name'+i).value = old_vals[i];
+					attach_typing_listener(Dom.get('name'+i));
+				}	
+				Dom.get('name'+old).focus();
+			} else if(type == "extension") {
+				var count = Dom.get('extension_count');
+				var old = parseInt(count.value);
+				var new_index = old+1;
+				var i = 0;
+				for(i; i < old; i=i+1) {
+					old_vals[i] = Dom.get('extension'+i).value;
+				}
+				count.value = new_index;
+				var field = "<div id='extensionset"+old+"'><label for='extension"+old+"'>Extension</label><br /><input id='extension"+old+"' name='extension"+old+"' type='text' /><br /></div>";
+				var elem = Dom.get("extensions");
+				elem.innerHTML = elem.innerHTML + field;
+				old_vals[old] = "";
+				i = 0;
+				for(i; i < count.value; i=i+1) {
+					Dom.get('extension'+i).value = old_vals[i];
+					attach_typing_listener(Dom.get('extension'+i));
+				}
+				Dom.get("extension"+old).focus();			
+			}
+			attach_typing_listeners();
+		};
+		
+		var remove_field = function() {
+			var type_element = Dom.get('filter_by');
+			var type = type_element.value;
+			var old_vals = [];
+			if(type == "name") {
+				var count = Dom.get('name_count');
+				var old = parseInt(count.value);
+				if(old <= 1) {
+					return;
+				}
+				var new_index = old-1;
+				var i = 0;
+				count.value = new_index;
+				var container = Dom.get("names");
+				var elem = Dom.get("nameset"+new_index);
+				container.removeChild(elem);	
+			} else if(type == "extension") {
+				var count = Dom.get('extension_count');
+				var old = parseInt(count.value);
+				if(old <= 1) {
+					return;
+				}
+				var new_index = old-1;
+				var i = 0;
+				count.value = new_index;
+				var container = Dom.get("extensions");
+				var elem = Dom.get("extensionset"+new_index);
+				container.removeChild(elem);
+			}
+			attach_typing_listeners();
+			recompute_filter();
+		};
+		
+		var init = function() {
+			toggleFields();
+			attach_typing_listeners();
+		};
+		
+		YAHOO.util.Event.onDOMReady(init);
+		
+		var submit_handler = function (event) {
+			Dom.get("filter_submit").disabled=true;
+		};
+
+        YAHOO.util.Event.on("filter_form", "submit", submit_handler);
+	</script>
+</%def>

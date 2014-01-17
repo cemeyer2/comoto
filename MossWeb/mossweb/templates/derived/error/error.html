@@ -1,0 +1,22 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Server Error - ${c.message}</h3>
+</%def>
+% if int(c.code) == 500:
+<p>
+An e-mail has been sent to the developers to let them know about this problem and it should be resolved shortly.
+</p>
+<p>
+<h4>Please take a minute to let the developers know what you did to cause this error:</h4>
+<br /><br />
+${h.form_start(h.url_for(controller='error', action='feedback', id=None), method="POST", name="feedback_form", id="feedback_form")}
+	${h.field("Feedback", h.textarea(name='feedback', cols=50, rows=10), required=False)}
+    ${h.field(field=h.submit(value="Submit", name='submit'))}
+${h.form_end()}
+</p>
+% endif
+<%def name="title()">Server Error - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

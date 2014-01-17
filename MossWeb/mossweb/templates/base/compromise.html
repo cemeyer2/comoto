@@ -1,0 +1,272 @@
+<%!
+from pylons import request
+import datetime
+%>
+
+<%
+year = datetime.date.today().year
+highlight = "class='first'"
+controller = request.environ['pylons.routes_dict']['controller']
+za = ""
+login_class = ""
+import_class = ""
+view_files_class = ""
+run_analysis_class = ""
+view_analysis_class = ""
+semester_class = ""
+user_class = ""
+history_class = ""
+logout_class = ""
+viz_class = ""
+
+if controller == 'login':
+	login_class = highlight
+elif controller == 'import':
+	import_class = highlight
+elif controller == 'fileset':
+	view_files_class = highlight
+elif controller == 'analysis':
+	run_analysis_class = highlight
+elif controller == 'view_analysis':
+	view_analysis_class = highlight
+elif controller == 'semester':
+	semester_class = highlight
+elif controller == 'user':
+	user_class = highlight
+elif controller == 'history':
+	history_class = highlight
+elif controller == 'viz':
+    viz_class = highlight
+
+user = h.get_user(request.environ)
+%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Compromise
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20081103
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <title>${self.title()}</title>
+
+    ${self.css_includes()}
+
+    ${self.js()}
+
+</head>
+
+<body>
+${self.header()}
+	<div id="header">
+		<div id="logo">
+			<h1><a href="${h.url_for('/')}">Collaboration Modeling Toolkit</a></h1>
+			<!--<p> design by <a href="http://www.freecsstemplates.org/">Free CSS Templates</a></p>-->
+		</div>
+	</div>
+	<!-- end #header -->
+	<div id="menu">
+		<ul>
+			<li ${login_class}><a href="${h.url_for('/')}">Home</a></li>
+% if user.enabled:
+			<li ${import_class}><a href="${h.url_for(controller='import', action='begin', id=None)}">Import Files</a></li>
+			<li ${view_files_class}><a href="${h.url_for(controller='fileset', action='list_filesets', id=None)}">View Files</a></li>
+			<li ${run_analysis_class} ><a href="${h.url_for(controller='analysis', action='create', id=None)}">Run Analysis</a></li>
+			<li ${view_analysis_class} ><a href="${h.url_for(controller='view_analysis', action='list', id=None)}">View Analysis</a></li>
+			<li ${history_class} ><a href="${h.url_for(controller='history', action='search', id=None)}">Student History</a></li>
+            <li ${viz_class}><a href="${h.url_for(controller='viz', action='index', id=None)}">Viz</a></li>
+% endif
+			<!--<li ${logout_class}><a href="https://comoto.cs.illinois.edu/bluestem/logout.cgi">Logout</a></li> WE DONT USE BLUESTEM ANYMORE-->
+		</ul>
+		
+	    <div id="loadingPopupUpdate">
+	        <div class="post">
+	            <h3 class="title">Updating...</h3><br/>
+	            <div class="entry">
+	                <center>
+	                    <div id="loadingStatusBoxUpdate">
+	                        <table>
+	                            <tr>
+	                                <td><img src="${h.url_for('/viz_images/busy.gif')}"/></td>
+	                                <td id="loadingStatusUpdate"></td>
+	                            </tr>
+	                        </table>
+	                        <br/>
+	                    </div>
+	                    <div id="loadingErrorBoxUpdate"><div id="loadingErrorUpdate"></div><br/></div>
+	                </center>
+	            </div>
+	            <input type=button id="okButtonUpdate" value="Ok" onclick="hideLoadingPopup();"/>
+	        </div>
+    	</div>
+	
+	
+	</div>
+	<div id="backgroundPopupUpdate"></div>
+	<!-- end #menu -->
+<div id="wrapper">
+<div class="btm">
+	<div id="page">
+        ${self.page()}
+        ${self.sidebar()}
+	</div>
+</div>
+</div>
+	<div id="footer">
+		<p>© 2009-${year} The Board of Trustees at the University of Illinois</p>
+		<p>University of Illinois at Urbana-Champaign • College of Engineering • Department of Computer Science</p>
+		<br />
+		<p>Moss © 2010 Similix Corporation</p>
+		<br />
+		<p><a href="${h.url_for(controller="about", action="comoto", id=None)}">About CoMoTo</a></p>
+		<br />
+		<p><a href="${h.url_for(controller="about", action="api", id=None)}">CoMoTo API</a></p>
+        <br />
+        <p>version ${c.revision}</p>
+        <br/>
+	</div>
+	<!-- end #footer -->
+</body>
+</html>
+
+<%def name="css_includes()">
+
+    <!-- Bootstrap CSS -->
+    <link type="text/css" href="${h.url_for('/bootstrap/css/bootstrap.min.css')}" rel="stylesheet"/>
+
+    <link href="${h.url_for('/css/style.css')}" rel="stylesheet" type="text/css" media="screen" />
+    <!--<link href="${h.url_for(controller='dynamic_css', action='facebox', id=None)}" rel="stylesheet" type="text/css" media="screen" />-->
+    <link href="${h.url_for('/facebox2/facebox.css')}" rel="stylesheet" type="text/css" media="screen" />
+    <link href="${h.url_for(controller='dynamic_css', action='cluetip', id=None)}" rel="stylesheet" type="text/css" media="screen" />
+</%def>
+
+<%def name="page()">
+    <div id="content">
+        <div class="post">
+            ${self.heading()}
+            <div class="entry">
+                ${next.body()}
+            </div>
+        </div>
+    </div>
+</%def>
+
+<%def name="sidebar()">
+    <% user = h.get_user(request.environ) %>
+    <div id="sidebar">
+        <ul>
+            <li>
+                <p>Welcome ${user.get_name()}</p>
+            </li>
+            <li>
+                <h2>Navigation</h2>
+                <ul>
+                    <li><a href="${h.url_for('/')}">Home</a></li>
+    % if user.enabled:
+            <li><a href="${h.url_for(controller='import', action='begin', id=None)}">Import Files</a><span>Import new source code into the system</span> </li>
+            <li><a href="${h.url_for(controller='fileset', action='list_filesets', id=None)}">View Files</a><span>View source code already in the system</span> </li>
+            <li><a href="${h.url_for(controller='analysis', action='create', id=None)}">Run Analysis</a><span>Create new analysis</span> </li>
+            <li><a href="${h.url_for(controller='view_analysis', action='list', id=None)}">View Analysis</a><span>View existing analysis in the system</span> </li>
+            <li><a href="${h.url_for(controller='history', action='search', id=None)}">Student History</a><span>View student history in CoMoTo</span></li>
+            <li><a href="${h.url_for(controller='viz', action='index', id=None)}">Viz</a><span>View interactive visualization</span></li>
+    % endif
+        </ul>
+        </li>
+    % if user.superuser: 
+        <li>
+            <h2>Admin</h2>
+            <ul>
+                <li><a href="${h.url_for(controller='semester', action='manage', id=None)}">Manage Semesters</a><span>Add a new semester to the system</span></li>
+                <li><a href="${h.url_for(controller='users', action='manage', id=None)}">Manage Users</a><span>Add users or manage existing ones</span></li>
+                <li><a href="${h.url_for(controller='course', action='admin', id=None)}">Manage Courses</a><span>Add courses or manage existing ones</span></li>
+		% if request.environ['HTTP_HOST'].startswith('comoto') and c.incoming_changesets > 0:
+			% if c.incoming_changesets == 1:
+	                <li><a onclick="javascript:update()">Update Comoto From HG</a><span>${c.incoming_changesets} changeset incoming</span></li>
+			% else:
+					<li><a onclick="javascript:update()">Update Comoto From HG</a><span>${c.incoming_changesets} changesets incoming</span></li>
+			% endif
+		% endif
+            </ul>
+        </li>
+    % endif
+        <li>
+            <h2>What is CoMoTo?</h2>
+            <p>
+                The <b>Co</b>llaboration <b>Mo</b>deling <b>To</b>olkit is a dynamic web application that allows university course staff to run automated
+                collaboration analysis on source code files. Submitted source code files and computed analyses
+                are stored securely on this server and are only accessable to users whom have access to the
+                course which the resources are associated.
+            </p>
+        </li>
+        </ul>
+    </div>
+    <!-- end #sidebar -->
+    <div style="clear: both;">&nbsp;</div>
+</%def>
+
+<%def name="title()">CoMoTo - Collaboration Modeling Toolkit</%def>
+<%def name="js()">
+	
+	<script type="text/javascript">
+		var log = function(data){
+			if(console){
+				console.log(data);
+			}
+		}
+	</script>
+	
+    ${h.javascript_link("https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js")}
+    ${h.javascript_link(h.url_for(controller='dynamic_javascript', action='facebox2', id=None))}
+    ${h.javascript_link(h.url_for("/cluetip/jquery.hoverIntent.js.min.js"))}
+    ${h.javascript_link(h.url_for("/cluetip/jquery.cluetip.js.min.js"))}
+    ${h.javascript_link(h.url_for("/jquery/float.js.min.js"))}
+
+    ${h.javascript_link(h.url_for('/yui/2.9.0/yahoo/yahoo.js.min.js'))}
+	${h.javascript_link(h.url_for('/yui/2.9.0/dom/dom.js.min.js'))}
+	${h.javascript_link(h.url_for('/yui/2.9.0/event/event.js.min.js'))}
+	
+	${h.javascript_link(h.url_for('/yui/2.9.0/yahoo-dom-event/yahoo-dom-event.js.min.js'))}
+	${h.javascript_link(h.url_for('/yui/2.9.0/connection/connection.js.min.js'))}
+	${h.javascript_link(h.url_for('/yui/2.9.0/json/json.js.min.js'))}
+	${h.javascript_link(h.url_for('/yui/2.9.0/animation/animation.js.min.js'))}
+	${h.javascript_link(h.url_for('/yui/2.9.0/dragdrop/dragdrop.js.min.js'))}
+	${h.javascript_link(h.url_for("/update/update.js.min.js"))}
+
+    <script type="text/javascript">
+		var revision = "${c.revision}";
+        //facebox dependencies
+        jQuery(document).ready(function($) {
+          $('a[rel*=facebox]').facebox();
+          $('a.load-local').cluetip({local:true, cursor: 'pointer'});
+        });
+
+        var Dom = YAHOO.util.Dom;
+
+        var loadFaceboxAjax = function(div_id, target_url) {
+            var callback = {
+                success: function(o) {
+                    Dom.get(div_id).innerHTML = o.responseText;
+                },
+                failure: function(o) {
+                    //fail silently
+                    //alert("Failed to retrieve required information.");
+                }
+            };
+            var url = target_url;
+            var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+        };
+    </script>
+</%def>
+<%def name="header()"><a name="top"></a></%def>
+<%def name="heading()"><h1>${c.heading or 'No Title'}</h1></%def>

@@ -1,0 +1,20 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Analysis Wizard - Select Analysis Engine</h3>
+</%def>
+The Collaboration Modelling Toolkit currently only offers the Moss analysis engine to perform analysis, but in the future we plan to
+add support for the jPlag analysis engine as well.<br /><br />
+<ul>
+	<li>
+		<a href="${h.url_for(controller='analysis', action='moss_options', id=c.assignment.id)}">Moss</a>
+	</li>
+	<li>
+		JPlag
+	</li>
+</ul>
+
+<%def name="title()">Select Analysis Engine - Analysis Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

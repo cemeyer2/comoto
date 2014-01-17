@@ -1,0 +1,43 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Managing ${c.course.name}</h3>
+</%def>
+
+<br/>
+Offerings:<br/>
+<ul>
+% for offering in c.course.offerings:
+	% if offering.semester.row_type == 'semester':
+		<li><a href="${h.url_for(controller="offering", action="manage", id=offering.id)}">${offering.to_str()}</a> - <a href="${h.url_for(controller="offering", action="view_roster", id=offering.id)}">view roster</a></li>
+	% else:
+		<li>${offering.to_str()}</li>
+	% endif
+% endfor
+</ul>
+% if len(c.semesters) > 0:
+<br/>
+<h3>Add new offering:</h3><br />
+${h.form_start(h.url_for(controller='course', action='new_offering', id=c.course.id), method="POST")}
+    ${h.field(
+		"Semester",
+		h.select(
+			"semester",
+			id='semester',
+			options = map(lambda x: (x.id, x.to_str()), c.semesters),
+			selected_values = [],
+		),
+	)}
+    ${h.field(field=h.submit(value="Create Offering", name='submit'))}
+${h.form_end()}
+% endif
+
+<br />
+<br />
+<br />
+
+
+<%def name="title()">Manage a Course - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

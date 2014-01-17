@@ -1,0 +1,19 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Import Wizard - Select Import Type</h3>
+</%def>
+
+<ul>
+<li>
+<a href="${h.url_for(controller='import', action='select_type', id=c.offering.id, solution='1')}">Create a solution file set</a>
+</li>
+<li>
+<a href="${h.url_for(controller='import', action='select_type', id=c.offering.id, solution='0')}">Create a regular submission file set</a>
+</li>
+</ul>
+
+<%def name="title()">Select Import Type - Import Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

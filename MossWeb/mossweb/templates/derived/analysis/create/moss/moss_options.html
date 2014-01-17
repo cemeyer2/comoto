@@ -1,0 +1,104 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Analysis Wizard - Moss Options</h3>
+</%def>
+
+${h.form_start(h.url_for(controller='analysis', action='moss_analysis', id=None), method="POST", name="moss_form", id="moss_form")}
+    ${h.field("Name for assignment", h.literal(c.assignment.name))}
+	${h.field("Language", h.literal(c.assignment.language))}
+	${h.field("Course", h.literal(c.assignment.filesets[0].offering.course.name))}
+	
+% for fileset in c.assignment.filesets:
+	${h.field("File Set", h.literal(str(fileset.name) + " - " + fileset.offering.to_str()))}
+% endfor
+
+	${h.field(
+		"Max matches a student will appear in",
+		h.select(
+			"moss_repeat_count",
+			id='moss_repeat_count',
+			options = c.moss_repeat_options,
+			selected_values = [c.moss_repeat_count]
+		),
+	)}
+	
+	${h.field("",h.facebox("What is this?", "This option sets the maximum number of times a given passage may appear before it is ignored.  A passage of code that appears in many programs is probably legitimate sharing and not the result of plagiarism.  With this option set to N, any passage appearing in more than N programs is treated as if it appeared in a base file (i.e., it is never reported). This option can be used to control moss' sensitivity.  When set to 2, moss reports only passages that appear in exactly two programs.  If one expects many very similar solutions (e.g., the short first assignments typical of introductory programming courses) then using a setting of 3 or 4 is a good way to eliminate all but truly unusual matches between programs while still being able to detect 3-way or 4-way plagiarism.  With 1000000 (or any very large number), moss reports all matches, no matter how often they appear. This setting is most useful for large assignments where one also a base file expected to hold all legitimately shared code."))}
+	
+	${h.field(
+		"Number of matches to compute",
+		h.select(
+			"moss_max_matches",
+			id='moss_max_matches',
+			options = range(0,100,10) + range(100,500,25) + range(500,5100,100),
+			selected_values = [c.moss_max_matches]
+		),
+	)}
+	
+	${h.field("",h.facebox("What is this?","This is the number of matches that will be computed. The higher the number, the longer the analysis will take to complete and load."))}
+
+% if False:
+	${h.field(
+		"Do deep solution analysis on",
+		h.select(
+			"deep_solution",
+			id='deep_solution',
+			options = c.deep_solution_choices,
+			selected_values = []
+		),
+	)}
+% endif
+	
+	${h.hidden('assignment_id', c.assignment.id)}
+    ${h.field(field=h.submit(value="Continue", name='submit'))}
+${h.form_end()}
+<br /><br />
+<div id="loading" style="display:none;">
+<div id="status">
+Status: <div id="status_content"></div><br /><br />
+</div>
+${h.facebox('taking a long time to load?', "This page can take a long time to submit and move on to the next page if you are running a large analysis.<br /><br />Be patient...CoMoTo is not frozen or hanging, its working hard in the background to run your analysis!")}<br />
+${h.image(h.url_for("/loading.gif"), "Running...")}
+</div>
+
+
+<%def name="title()">Moss Options - Analysis Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+	
+	<script type="text/javascript">
+		
+		var Dom = YAHOO.util.Dom;
+		
+		var getStatus = function() {
+			var callback = {
+				success: function(o) {
+					Dom.get('status_content').innerHTML = o.responseText;
+				},
+				failure: function(o) {
+					//fail silently
+					//alert("Failed to retrieve required information.");
+				}
+			};
+			var url = "${h.url_for(controller="analysis", action="status")}"
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};
+
+		var hide = function(id) {
+        	Dom.setStyle(id, 'display', 'none');
+    	};
+		
+		var show = function(id) {
+        	Dom.setStyle(id, 'display', 'block');
+    	};		
+
+		var submit_handler = function (event) {
+			show("loading");
+			Dom.get("submit").disabled=true;
+			setInterval ( "getStatus()", 3000 );
+		};
+
+        YAHOO.util.Event.on("moss_form", "submit", submit_handler);
+		
+	</script>
+</%def>

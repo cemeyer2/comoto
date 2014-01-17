@@ -1,0 +1,21 @@
+<%
+div_id = h.__rand_string(32)
+%>
+
+<div id="${div_id}">
+
+<h3 class="title">Email Students</h3>
+
+% for student in c.students:
+	${h.field("Send message to "+student.displayName+" ("+student.netid+")", h.checkbox(name=student.id, checked=True, id=str(student.id)+div_id))}
+	<br />
+% endfor
+	
+	${h.field("Message Subject", h.text(name='subject', id="subject"+div_id),required=True)}
+	<br />
+	${h.field("Message Body", h.textarea(name='body', cols=50, rows=10, id="body"+div_id), required=True)}
+	<input type="button" class="btn" value="Send Message" onclick="sendEmail('${div_id}')"/>
+	${h.hidden(name="student_ids",  id="student_ids"+div_id, value=c.student_ids_str)}
+	${h.hidden(name="assignment_id", id="assignment_id"+div_id, value=c.assignment_id)}
+	
+	</div>

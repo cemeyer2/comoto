@@ -1,0 +1,57 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Manage Course - ${c.course.name}</h3>
+</%def>
+
+Associated users:<br />
+	<ul>
+% for user in c.course.users:
+% if not user.superuser:
+		<li>
+			${user.get_name()} - <a href="${h.url_for(controller='course', action='remove_user', id=c.course.id, user_id=user.id)}">remove</a>
+		</li>
+% endif
+% endfor	
+	</ul>
+
+% if len(c.potential_users) > 0:
+
+<br /><h3>Add course staff:</h3><br />
+${h.form_start(h.url_for(controller='course', action='add_user', id=c.course.id), method="POST")}
+    ${h.field(
+		"User",
+		h.select(
+			"user_id",
+			id='user_id',
+			options = map(lambda x: (x.id, str(x.get_name())), c.potential_users),
+			selected_values = [],
+		),
+	)}
+    ${h.field(field=h.submit(value="Associate User", name='submit'))}
+${h.form_end()}
+	</ul>
+
+% endif
+
+% if len(c.available_users) > 0:
+<br /><br /><br />
+<br/>
+<h3>Add user to course:</h3><br />
+${h.form_start(h.url_for(controller='course', action='add_user', id=c.course.id), method="POST")}
+    ${h.field(
+		"User",
+		h.select(
+			"user_id",
+			id='user_id',
+			options = map(lambda x: (x.id, str(x.get_name())), c.available_users),
+			selected_values = [],
+		),
+	)}
+    ${h.field(field=h.submit(value="Associate User", name='submit'))}
+${h.form_end()}
+% endif
+
+<%def name="js()">
+        ${parent.js()}
+</%def>

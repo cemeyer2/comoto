@@ -1,0 +1,60 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Manage User - ${c.user.name} - ${c.user.givenName} ${c.user.surName}</h3>
+</%def>
+
+% if c.user.enabled == False:
+This user is currently disabled. <a href="${h.url_for(controller='users', action='enable', id=c.user.id)}">Click here</a> to enable this user.<br /><br />
+This user has requested access to the following courses: ${c.user.requested_courses}
+<br /><br /><br />
+% endif
+
+${h.form_start(h.url_for(controller='users', action='edit_superuser', id=c.user.id), method="POST")}
+    ${h.field(
+		"Superuser",
+		h.checkbox(
+			"superuser",
+			id='superuser',
+			checked=c.user.superuser
+		),
+	)}
+	<input type="hidden" name="user_id" value="${c.user.id}"/>
+    ${h.field(field=h.submit(value="Edit Superuser Powers", name='submit'))}
+${h.form_end()}
+
+<br /> <br />
+
+% if not c.user.superuser:
+Associated courses:<br />
+	<ul>
+% for course in c.user.courses:
+		<li>
+			${course.name} - <a href="${h.url_for(controller='users', action='remove_course', id=c.user.id, course_id=course.id)}">remove</a>
+		</li>
+% endfor
+	</ul>
+% else:
+	<b>User is a superuser, so this user already has access to all courses and settings.</b>
+% endif
+
+% if len(c.available_courses) > 0 and c.user.superuser == False:
+<br /><br /><br />
+<br/>
+<h3>Add course to user:</h3><br />
+${h.form_start(h.url_for(controller='users', action='add_course', id=c.user.id), method="POST")}
+    ${h.field(
+		"Course",
+		h.select(
+			"course_id",
+			id='course_id',
+			options = map(lambda x: (x.id, str(x.name)), c.available_courses),
+			selected_values = [],
+		),
+	)}
+    ${h.field(field=h.submit(value="Associate Course", name='submit'))}
+${h.form_end()}
+% endif
+<%def name="js()">
+    ${parent.js()}
+</%def>

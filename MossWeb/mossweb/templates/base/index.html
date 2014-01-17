@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>${self.title()}</title>
+    ${self.head()}
+    ${self.js()}
+</head>
+<body>
+	<div id="doc3" class="yui-t5">
+		<div id="hd">
+    			<div class="yui-gc">
+				<div class="yui-u first">${self.heading()}</div>
+				<div class="yui-u"></div>
+			</div>
+			    ${self.header()}
+    			${self.tabs()}
+		</div>
+		<div id="bd">    
+    			<div id="yui-main">
+				<div class="yui-b">
+    					${self.flash()}
+    					${next.body()}
+				</div>
+			</div>
+			<div class="yui-b">
+				${self.menu()}
+			</div>
+		</div>
+		<div id="ft">
+    			${self.footer()}
+		</div>
+</body>
+</html>
+
+<%def name="title()">MossWeb</%def>
+<%def name="head()">
+
+    	${h.stylesheet_link(h.url_for('/yui/2.8.0/reset-fonts-grids/reset-fonts-grids.css'))}
+		${h.stylesheet_link(h.url_for('/css/main.css'))}
+
+</%def>
+<%def name="header()"><a name="top"></a></%def>
+<%def name="tabs()"></%def>
+<%def name="menu()"></%def>
+<%def name="heading()"><h1>${c.heading or 'No Title'}</h1></%def>
+<%def name="breadcrumbs()"></%def>
+<%def name="footer()">
+<p><a href="#top">Top ^</a></p>
+<p><a href="${h.url_for('/')}">Home</a></p>
+</%def>
+<%def name="flash()">
+    % if session.has_key('flash'):
+    <div id="flash"><p>${session.get('flash')}</p></div>
+    <%
+        del session['flash']
+        session.save()
+    %>
+    % endif
+</%def>
+<%def name="js()">
+
+</%def>

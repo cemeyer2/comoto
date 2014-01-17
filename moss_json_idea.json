@@ -1,0 +1,40 @@
+{
+	matches: [
+			{
+				score1: A,
+				score2: B,
+				chunks:	[{
+								startLine1: C,
+								endLine1: D,
+								code1: "src code here",
+								startLine2: E,
+								endLine2: F,
+								code2: "src code here"
+							},{
+								startLine1: G,
+								endLine1: H,
+								code1: "src code here",
+								startLine2: I,
+								endLine2: J,
+								code2: "src code here"
+							},]
+			},{
+				score1: K,
+				score2: L,
+				chunks:	[{
+								startLine1: M,
+								endLine1: N,
+								code1: "src code here",
+								startLine2: O,
+								endLine2: P,
+								code2: "src code here"
+							},{
+								startLine1: Q,
+								endLine1: R,
+								code1: "src code here",
+								startLine2: S,
+								endLine2: T,
+								code2: "src code here"
+							},]
+			},]
+}

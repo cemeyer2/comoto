@@ -1,0 +1,455 @@
+<%inherit file="/base/compromise.html" />
+
+<%!
+import mossweb.model.model as model
+%>
+
+<%def name="heading()">
+    <h3 class="title">View Analysis: ${c.assignment.course.name} ${c.assignment.name}</h3>
+</%def>
+<a name="top"/>
+<div id="floating_links">
+<ul>
+<li><a href="#top">top</a></li>
+<li><a href="#solution">solution matches</a></li>
+<li><a href="#crosssemester">cross semester matches</a></li>
+<li><a href="#samesemester">same semester matches</a></li>
+</ul>
+</div>
+<br/>
+<br/>
+<h3>Analysis Information<img id="info_toggle_img" src="${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}"></img></h3>
+<div id="info" style="display: none;">
+<br/>
+File sets included in this analysis:<br />
+<ul>
+% for fileset in filter(lambda f: not isinstance(f, model.BaseFileSet), c.assignment.filesets):
+	<li>
+		<a href="${h.url_for(controller='fileset', action='list_fileset', id=fileset.id)}">
+		${str(fileset.name) + " - " + fileset.offering.to_str()}
+		</a>
+	</li>
+% endfor
+</ul>
+% if len(filter(lambda f: isinstance(f, model.BaseFileSet), c.assignment.filesets)) > 0:
+Base file sets included in this analysis:<br />
+<ul>
+% for fileset in filter(lambda f: isinstance(f, model.BaseFileSet), c.assignment.filesets):
+	<li>
+		<a href="${h.url_for(controller='fileset', action='list_fileset', id=fileset.id)}">
+		${str(fileset.name) + " - " + fileset.offering.to_str()}
+		</a>
+	</li>
+% endfor
+</ul>
+% endif
+<br />
+Lexer used for this analysis: ${c.assignment.language}
+<br /><br />
+
+</div>
+<br />
+<h3>Filter<img id="filter_toggle_img" src="${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}"></img></h3>
+<div id="filter" style="display: none;">
+${h.form_start(h.url_for(controller='view_analysis', action='prune', id=None), method="POST", name="prune_form", id="prune_form")}
+
+	<label for="offering_id">Prune analysis to offering</label>
+	${h.select(
+			"offering_id",
+			id='offering_id',
+			options = map(lambda x: (x.id, x.to_str()), c.offerings),
+			selected_values = []
+		)}
+	${h.hidden('assignment_id', c.assignment.id)}
+    <input type="button" class="btn" name="prune" id="prune" value="Prune", onclick="tryPrune()"/>
+${h.form_end()}
+${h.facebox('What is this?', 'Analysis can be pruned down to one semester such that only matches that have a student in the semester that you prune to appear in the analysis results')}
+% if c.assignment.analysis.mossAnalysis.pruned:
+<br /><br />
+This analysis is pruned to ${c.assignment.analysis.mossAnalysis.prunedOffering.to_str()}
+% endif
+<br /><br />
+${h.form_start(h.url_for(controller='view_analysis', action='view', id=c.assignment.id), method="POST", name="filter_form", id="filter_form")}
+
+	<label for="filter">Filter this analysis to:</label>
+	${h.select(
+			"filter",
+			id='filter',
+			options = range(100,-1,-1),
+			selected_values = c.filter
+		)}
+		<br />
+		${h.facebox('What is this?', 'Analysis can be filtered down so that only matches with a score that is at least greater than or equal to the requested filter value are displayed. This operation does not modify the data in CoMoTo, only how it is displayed.')}
+		<br /><br />
+<%
+single_student_max_options = [(-1,"Unlimited")]
+single_student_max_options.extend(range(1,101))
+import sys
+single_student_max_upper_bound_options = [(sys.maxint,"Unlimited")]
+single_student_max_upper_bound_options.extend(range(1,101))
+%>
+		<label for="single_student_max">Max matches to show from a single student (lower bound):</label>
+		${h.select(
+			"single_student_max",
+			id='single_student_max',
+			options = single_student_max_options,
+			selected_values = c.single_student_max
+		)}
+		<br />
+		<label for="single_student_max_upper_bound">Max matches to show from a single student (upper bound):</label>
+		${h.select(
+			"single_student_max_upper_bound",
+			id='single_student_max_upper_bound',
+			options = single_student_max_upper_bound_options,
+			selected_values = c.single_student_max_upper_bound
+		)}
+		<br />
+		${h.facebox('What is this?', 'Analysis can be filtered down so that a student will only show up in a certain number of matches. For a given match to be displayed in the analysis, the following conditions must be met: <ul><li>Either student in the match must appear in less than the lower bound set</li><li>Neither student in the match can appear in more than the upper bound set</li></ul> Solution matches are excluded from this filter. This operation does not modify the data in CoMoTo, only how it is displayed.')}
+		<br /><br />
+    <input type="Submit" name="submit" id="submit" value="Filter"/>
+${h.form_end()}
+<br /><br />
+</div>
+<br />
+<h3>Static Graphs<img id="static_graphs_toggle_img" src="${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}"></img></h3>
+<div id="static_graphs" style="display: none;">
+${h.facebox_ajax('Generate a Static Graph',h.url_for(controller="analysis",action="generate_static_graph", id=c.assignment.id))}
+<br /><br /><br />
+%if len(c.staticMossGraphs) > 0:
+<h5>Static Graphs Generated:</h5>
+<table>
+<tr><td>Threshold</td><td>Solution Included?</td><td>Anonymous?</td><td>Singletons Included?</td><td>Layout Engine Used</td><td></td></tr>
+%for graph in c.staticMossGraphs:
+<tr>
+<td>
+${str(graph.threshold)}
+</td>
+<td>
+${str(graph.includeSolution)}
+</td>
+<td>
+${str(graph.anonymize)}
+</td>
+<td>
+${str(graph.singletons)}
+</td>
+<td>
+${str(graph.layoutEngine)}
+</td>
+<td>
+<a href="${h.url_for(controller="view_analysis", action="view_static_graph_medium", id=str(graph.id)+".png")}" rel='facebox'>
+<img src="${h.url_for(controller="view_analysis", action="view_static_graph_thumbnail", id=str(graph.id)+".png")}" border=1/>
+</a><br />
+<a href="${h.url_for(controller="view_analysis", action="view_static_graph", id=str(graph.id)+".png")}" target="_blank">full size</a>
+</td>
+</tr>
+%endfor
+</table>
+%endif
+<br /><br />
+</div>
+<br />
+<h3>Histograms<img id="histograms_toggle_img" src="${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}"></img></h3>
+<div id="histograms" style="display: none;">
+<br /><br />
+% for image in c.assignment.analysis.mossAnalysis.images:
+	${image.title}:<br />
+	<image width="600" height="400" src="${h.url_for(controller="image", action="view", id=str(image.id)+"."+image.type)}"/><br />
+% endfor
+</div>
+% if c.assignment.analysis.mossAnalysis.prunedOffering is not None:
+<br /><br />
+<a href="${h.url_for(controller='viz', action='index', id=c.assignment.id)}">Launch Viz</a>
+% endif
+<br /><br /><br />
+## write out solution matches
+<a name="solution"></a>
+<h2>Solution matches</h2>
+% if len(c.solutionMatches) > 0:
+<table border="1">
+<tr>
+<th>Student 1 - score 1</th>
+<th>Student 2 - score 2</th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+% for match in c.solutionMatches:
+
+<tr>
+<td>
+% if isinstance(match.submission1, model.StudentSubmission):
+	<a href="${h.url_for(controller="history", action="view", id=match.submission1.student.netid)}">
+	${str(match.submission1.student.netid)} 
+	</a>
+	 ${str(match.submission1.offering.semester.season)} ${str(match.submission1.offering.semester.year)} - ${str(match.score1)}
+% else:
+	Solution - ${str(match.submission1.fileset.name)} - ${str(match.score1)}
+% endif
+</td>
+<td>
+% if isinstance(match.submission2, model.StudentSubmission):
+	<a href="${h.url_for(controller="history", action="view", id=match.submission2.student.netid)}">
+	${str(match.submission2.student.netid)} 
+	</a>
+	 ${str(match.submission2.offering.semester.season)} ${str(match.submission2.offering.semester.year)} - ${str(match.score2)}
+% else:
+	Solution - ${str(match.submission2.fileset.name)} - ${str(match.score2)}
+% endif
+</td>
+<td>
+	<a href="${h.view_moss_result_url(match)}" target="_blank">details</a>
+</td>
+<td>
+    ${h.facebox_ajax("<img src='"+h.url_for('/crystal_project/24x24/actions/mail_generic.png')+"' />",h.mossmatch_to_email_url_ajax(match), "Email Students")}
+</td>
+<td>
+	${h.facebox_ajax("<img src='"+h.url_for('/crystal_project/24x24/actions/download.png')+"' />", h.url_for(controller="view_analysis", action="export_moss_match_ajax", id=match.id), "Download Match")}
+</td>
+</tr>
+
+% endfor
+</table>
+% else:
+No solution matches to display.
+% endif
+
+## write out cross semester matches
+<a name="crosssemester"></a>
+<h2>Peer-to-peer cross-semester matches</h2>
+% if len(c.crossSemesterMatches) > 0:
+<table border="1">
+<tr>
+<th>Student 1 - score 1</th>
+<th>Student 2 - score 2</th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+% for match in c.crossSemesterMatches:
+		
+<tr>
+<td>
+	<a href="${h.url_for(controller="history", action="view", id=match.submission1.student.netid)}">
+	${str(match.submission1.student.netid)}
+	</a>
+	 ${str(match.submission1.offering.semester.season)} ${str(match.submission1.offering.semester.year)} - ${str(match.score1)}
+</td>
+<td>
+	<a href="${h.url_for(controller="history", action="view", id=match.submission2.student.netid)}">
+	${str(match.submission2.student.netid)}
+	</a> ${str(match.submission2.offering.semester.season)} ${str(match.submission2.offering.semester.year)} - ${str(match.score2)}
+</td>
+<td>
+	<a href="${h.view_moss_result_url(match)}" target="_blank">details</a>
+</td>
+<td>
+    ${h.facebox_ajax("<img src='"+h.url_for('/crystal_project/24x24/actions/mail_generic.png')+"' />",h.mossmatch_to_email_url_ajax(match), "Email Students")}
+</td>
+<td>
+	${h.facebox_ajax("<img src='"+h.url_for('/crystal_project/24x24/actions/download.png')+"' />", h.url_for(controller="view_analysis", action="export_moss_match_ajax", id=match.id), "Download Match")}
+</td>
+</tr>
+	
+% endfor
+
+</table>
+% else:
+No cross-semester matches to display.
+% endif
+
+## write out same semester matches
+<a name="samesemester"></a>
+<h2>Peer-to-peer same-semester matches</h2>
+% if len(c.sameSemesterMatches) > 0:
+<table border="1">
+<tr>
+<th>Student 1 - score 1</th>
+<th>Student 2 - score 2</th>
+<th>Partners</th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+% for match in c.sameSemesterMatches:
+
+<tr>
+<td>
+	<a href="${h.url_for(controller="history", action="view", id=match.submission1.student.netid)}">
+	${str(match.submission1.student.netid)}
+	</a>
+	 ${str(match.submission1.offering.semester.season)} ${str(match.submission1.offering.semester.year)} - ${str(match.score1)}
+</td>
+<td>
+	<a href="${h.url_for(controller="history", action="view", id=match.submission2.student.netid)}">
+	${str(match.submission2.student.netid)}
+	</a>
+	 ${str(match.submission2.offering.semester.season)} ${str(match.submission2.offering.semester.year)} - ${str(match.score2)}
+</td>
+<td>
+	${h.partners_img(match)}
+</td>
+<td>
+	<a href="${h.view_moss_result_url(match)}" target="_blank">details</a>
+</td>
+<td>
+    ${h.facebox_ajax("<img src='"+h.url_for('/crystal_project/24x24/actions/mail_generic.png')+"' />",h.mossmatch_to_email_url_ajax(match), "Email Students")}
+</td>
+<td>
+	${h.facebox_ajax("<img src='"+h.url_for('/crystal_project/24x24/actions/download.png')+"' />", h.url_for(controller="view_analysis", action="export_moss_match_ajax", id=match.id), "Download Match")}
+</td>
+</tr>
+
+% endfor
+</table>
+% else:
+No same semester-matches to display.
+% endif
+
+<%def name="title()">View Analysis - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+	
+	<script type="text/javascript">
+		
+		var Dom = YAHOO.util.Dom;
+		
+		var tryPrune = function() {
+			Dom.get("prune").disabled = true;
+			Dom.get("prune_form").submit();
+		};
+		
+		var processGraph = function(div_id) {
+			var callback = {
+				success: function(o) {
+					Dom.get(div_id).innerHTML = o.responseText;
+				},
+				failure: function(o) {
+					//fail silently
+					//alert("Failed to retrieve required information.");
+				}
+			};
+			
+			//build the params
+			var assignment_id = ${c.assignment.id};
+			var params = "?";
+			var threshold = Dom.get("threshold"+div_id).value;
+			params += "threshold="+threshold;
+			var includeSolution = Dom.get("includeSolution"+div_id).value;
+			params += "&includeSolution="+includeSolution;
+			var anonymize = Dom.get("anonymize"+div_id).value;
+			params += "&anonymize="+anonymize;
+			var singletons = Dom.get("singletons"+div_id).value;
+			params += "&singletons="+singletons;
+			var layoutEngine = Dom.get("layoutEngine"+div_id).value;
+			params += "&layoutEngine="+layoutEngine;
+			
+			var url = "${h.url_for(controller="analysis",action="do_generate_static_graph", id=c.assignment.id)}"+params;
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};	
+		
+		var sendEmail = function(div_id) {
+			var callback = {
+				success: function(o) {
+					Dom.get(div_id).innerHTML = o.responseText;
+				},
+				failure: function(o) {
+					//fail silently
+					//alert("Failed to retrieve required information.");
+				}
+			};
+			var student_ids = Dom.get("student_ids"+div_id).value;
+			var params = "?";
+			params += "student_ids="+student_ids;
+			var students = student_ids.split(",");
+			for(var i=0; i<students.length; i++) {
+				var value = students[i];
+				var cbox = Dom.get(value+div_id);
+				if(cbox.checked) {
+					params += "&"+value+"=1";
+				}
+			}
+			var subject = Dom.get("subject"+div_id).value;
+			var body = Dom.get("body"+div_id).value;
+			if(subject.length == 0) {
+				alert("You must specify a subject");
+				return;
+			}
+			if(body.length == 0) {
+				alert("You must specify a body");
+				return;
+			}
+			params += "&subject="+subject;
+			params += "&body="+body;
+			var url = "${h.url_for(controller="view_analysis",action="do_email_students_ajax")}"+params;
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};	
+		
+
+		
+		function doc_ready() {
+			
+			var info_showing = false;
+			var static_graphs_showing = false;
+			var filter_showing = false;
+			var histograms_showing = false;
+			var xFunc = function() {
+				return $(document).width()-200;
+			};
+			var yFunc = function() {
+				return $(window).height()-$("#floating_links").height();
+			};
+			$("#floating_links").makeFloat({x:xFunc,y:yFunc,speed:'fast'});
+			
+			$("#static_graphs_toggle_img").click(function(){
+			    if(static_graphs_showing == false) {
+					$("#static_graphs_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1downarrow.png")}");
+				} else {
+					$("#static_graphs_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}");
+				}
+				static_graphs_showing = !static_graphs_showing;
+				$('#static_graphs').toggle('slow', function() { });
+			});
+			
+			$("#info_toggle_img").click(function(){
+			    if(info_showing == false) {
+					$("#info_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1downarrow.png")}");
+				} else {
+					$("#info_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}");
+				}
+				info_showing = !info_showing;
+				$('#info').toggle('slow', function() { });
+			});
+			
+			$("#filter_toggle_img").click(function(){
+			    if(filter_showing == false) {
+					$("#filter_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1downarrow.png")}");
+				} else {
+					$("#filter_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}");
+				}
+				filter_showing = !filter_showing;
+				$('#filter').toggle('slow', function() { });
+			});
+			
+			$("#histograms_toggle_img").click(function(){
+			    if(histograms_showing == false) {
+					$("#histograms_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1downarrow.png")}");
+				} else {
+					$("#histograms_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}");
+				}
+				histograms_showing = !histograms_showing;
+				$('#histograms').toggle('slow', function() { });
+			});
+			
+			$("#filter_toggle_img").css('cursor', 'pointer');
+			$("#info_toggle_img").css('cursor', 'pointer');
+			$("#static_graphs_toggle_img").css('cursor', 'pointer');
+			$("#histograms_toggle_img").css('cursor', 'pointer');
+		}
+		
+		$(document).ready(doc_ready);
+		
+		
+		
+		</script>
+</%def>

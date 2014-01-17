@@ -1,0 +1,27 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">View File - ${c.file.name}</h3>
+</%def>
+<a href="${h.url_for(controller='fileset', action='list_fileset', id=c.file.submission.fileset.id)}#${c.file.submission.id}">back to file set</a>
+<br /><br />
+${h.facebox_ajax("download this file", h.url_for(controller="fileset", action="download_file_ajax", id=c.file.id))}
+<br /><br />
+% if c.file.submission.row_type == 'studentsubmission':
+Submission by <a href="${h.url_for(controller="history", action="view", id=c.file.submission.student.netid)}">${c.file.submission.student.netid}</a>
+ - ${c.file.submission.student.displayName}
+% elif c.file.submission.row_type == 'solutionsubmission':
+Submission: Solution File
+% else:
+Submission: Base File
+% endif
+<br /><br />
+${h.literal(c.formatted_text)}
+<br /><br /><br /><br />
+
+<a href="${h.url_for(controller='fileset', action='list_fileset', id=c.file.submission.fileset.id)}#${c.file.submission.id}">back to file set</a>
+
+<%def name="title()">View File - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

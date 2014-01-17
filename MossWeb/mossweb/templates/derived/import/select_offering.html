@@ -1,0 +1,21 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Import Wizard - Select an Offering</h3>
+</%def>
+<br/>
+<br/>
+Offerings for ${c.course.name}:</br>
+<br/>
+<ul>
+% for offering in c.course.offerings:
+<li>
+<a href="${h.url_for(controller='import', action='select_solution', id=offering.id)}">${c.course.name} ${offering.semester.season} ${offering.semester.year}</a>
+</li>
+% endfor
+</ul>
+
+<%def name="title()">Select an Offering - Import Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

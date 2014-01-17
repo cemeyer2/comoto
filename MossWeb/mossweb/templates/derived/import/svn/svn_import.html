@@ -1,0 +1,39 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Import Wizard - SVN Import</h3>
+</%def>
+
+${h.form_start(h.url_for(controller='import', action='svn_export', id=None), method='POST')}
+    ${h.field("Name for FileSet", h.text(name='fileset_name'), required=True)}
+    ${h.field("SVN Root", h.text(name='svnroot'), required=True)}
+    ${h.field("Subdirectory containing files to import", h.text(name='subdir'), required=True)}
+	${h.field("SVN Username", h.text(name='username'), required=True)}
+	${h.field("SVN Password", h.password(name='password'), required=True)}
+	
+
+	
+	${h.field(
+		"Specify specific files",
+		h.select(
+			"specify_files",
+			id='specify_files',
+			options = ['No', 'Yes'],
+			selected_values = [],
+			onchange="toggle_files()"
+		),
+	)}
+	
+% for num in range(0, 10):
+	${h.field("File Name", h.text(name='filename'+str(num)), required=False)}
+% endfor
+	
+	${h.hidden('solution', c.solution)}
+	${h.hidden('offering', c.offering.id)}
+    ${h.field(field=h.submit(value="Upload archive", name='submit'))}
+${h.form_end()}
+
+<%def name="title()">SVN Import - Import Wizard - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

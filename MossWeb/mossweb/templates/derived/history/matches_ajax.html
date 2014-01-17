@@ -1,0 +1,15 @@
+<%!
+from mossweb.lib import history_helpers as hh
+%>
+
+<h3>Analysis Results:</h3>
+% if len(c.matches) > 0:
+	<table  style='width:800px; z-index:1000'>
+		<tr><th>Course</th><th>Analysis</th><th>Student 1</th><th>Student 2</th><th></th></tr>
+		% for match in c.matches:
+			${hh.moss_match_to_history_row_str(match,c.student)}
+		% endfor
+	</table>
+% else:
+  No matches to display for ${c.student.netid}
+% endif

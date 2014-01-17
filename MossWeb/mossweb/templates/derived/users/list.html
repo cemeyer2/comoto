@@ -1,0 +1,49 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Manage Users</h3>
+</%def>
+% if len(c.pending_users) > 0:
+
+<b>Pending Users:</b><br />
+<ul>
+% for user in c.pending_users:
+<li>
+	<a href="${h.url_for(controller='users', action='manage_user', id=user.id)}">${user.get_name()} - ${user.name}</a> - <a href="${h.url_for(controller='users', action='remove_user', id=user.id)}">delete</a>
+</li>
+% endfor
+</ul>
+<br /><br /><br />
+% endif
+
+<b>Add new user:</b><br />
+${h.form_start(h.url_for(controller='users', action='new_user', id=None), method="POST")}
+    ${h.field("Username", h.text(name='name'), required=True)}
+	${h.field(
+		"Superuser",
+		h.select(
+			"superuser",
+			id='superuser',
+			options = [(0,"No"),(1,"Yes")],
+			selected_values = [],
+		),
+	)}
+    ${h.field(field=h.submit(value="Create User", name='submit'))}
+${h.form_end()}
+<br /><br />
+<b>Existing Users:</b><br />
+<ul>
+% for user in c.users:
+<li>
+% if user.superuser:
+	<a href="${h.url_for(controller='users', action='manage_user', id=user.id)}"><em>${user.get_name()} - ${user.name}</em></a> - <a href="${h.url_for(controller='users', action='remove_user', id=user.id)}">delete</a>
+% else:
+	<a href="${h.url_for(controller='users', action='manage_user', id=user.id)}">${user.get_name()} - ${user.name}</a> - <a href="${h.url_for(controller='users', action='remove_user', id=user.id)}">delete</a>
+% endif
+</li>
+% endfor
+</ul>
+<br /><br />
+<%def name="js()">
+    ${parent.js()}
+</%def>

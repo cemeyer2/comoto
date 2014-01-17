@@ -1,0 +1,86 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Manage Courses</h3>
+</%def>
+<br/>
+<br/>
+<h3>Add a new course:</h3><br />
+${h.form_start(h.url_for(controller='course', action='new', id=None), method="post")}
+	${h.field(
+		"Department",
+		h.select(
+			"department",
+			id='department',
+			options = sorted(c.all_courses.keys()),
+			selected_values = [],
+			onchange="changeNumbers()"
+			),
+		)}
+	${h.field(
+		"Number",
+		h.select(
+			"number",
+			id='number',
+			options = [],
+			selected_values = [],
+			),
+		)}
+    ${h.field(field=h.submit(value="Create Course", name='submit'))}
+${h.form_end()}
+<br/>
+<br/>
+<h3>Current Courses in System:</h3></br>
+<br/>
+<ul>
+% for course in c.courses:
+<li>
+<b><a href="${h.url_for(controller='course', action='manage_course', id=course.id)}">${course.name}</a> - <a href="${h.url_for(controller='course', action='remove_course', id=course.id)}">delete</a>
+</b><br />
+Associated users:<br />
+	<ul>
+% for user in course.users:
+% if not user.superuser:
+		<li>
+			<a href="${h.url_for(controller='users', action='manage_user', id=user.id)}">${user.get_name()} - ${user.name}</a>
+		</li>
+% endif
+% endfor	
+	</ul>
+</li>
+% endfor
+</ul>
+<br/>
+<br />
+
+<%def name="title()">Add a Course - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+		
+		<script>
+			var changeNumbers = function() {
+				
+				var numbers = document.getElementById("number");
+				//clear it
+				if( numbers.hasChildNodes()) {
+    				while( numbers.childNodes.length >= 1 ) {
+        				numbers.removeChild( numbers.firstChild );       
+    				} 
+				}
+
+			
+				var department = Dom.get("department").value
+				var course_numbers = all_courses[department];
+				
+				for(i in course_numbers) {
+					var node = document.createElement("option");
+					node.value = ""+course_numbers[i]+"";
+					node.innerHTML = ""+course_numbers[i]+"";
+					numbers.appendChild(node); 
+				}
+				
+			};
+			YAHOO.util.Event.onDOMReady(changeNumbers);
+			var all_courses = ${str(c.all_courses)};
+		</script>
+</%def>

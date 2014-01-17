@@ -1,0 +1,4 @@
+1. fetching students initially with LDAP is very slow (in the API for getStudent), we should allow multiple students' data to be fetched in parallel
+2. add node searchability
+3. add autocompletion support for node searching
+4. add nice scrollbars for sidebars (jquery plugin)

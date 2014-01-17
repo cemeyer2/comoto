@@ -1,0 +1,139 @@
+<%!
+from mossweb.lib import history_helpers as hh
+%>
+
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">History for ${c.student.displayName}</h3>
+</%def>
+<h3>Student Information:</h3>
+<table>
+<tr>
+	<td></td>
+	<td>
+		<div id="icardphoto" style="background: url('${h.url_for(controller="image", action="icard", id=c.student.netid)}'); background-size: cover; width: 250px; height: 250px; -moz-background-size: cover;">
+			<img src="${h.url_for('/blank.gif')}" width="250" height="250" border=1/>
+		</div>
+	</td>
+</tr>
+<tr><td>Name:</td><td>${c.student.displayName}</td></tr>
+<tr><td>Netid:</td><td>${c.student.netid}</td></tr>
+<tr><td>Program:</td><td>${c.student.programName}</td></tr>
+<tr><td>Level:</td><td>${c.student.levelName}</td></tr>
+% if len(c.student.leftUIUC) > 0:
+<tr><td>Left UIUC:</td><td>${c.student.leftUIUC}</td></tr>
+% endif
+</table>
+<br />
+<h3>Directory Information<img id="ph_toggle_img" src="${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}"></img></h3>
+<div id="ph_data" style="display: none;">
+<table>
+% for key in sorted(c.ph_data.keys()):
+	% for value in c.ph_data[key]:
+		<tr>
+		<td>
+			${key}
+		</td>
+		<td>
+			${h.literal(value.replace("\r\n", "<br/>"))}
+		</td>
+		</tr>
+	% endfor
+% endfor
+</table>
+</div>
+<br /><br /><br />
+
+<h3>Submissions:</h3>
+<ul>
+% for submission in c.submissions:
+	<li>
+		${submission.fileset.name} - ${submission.fileset.offering.course.name} ${submission.fileset.offering.semester.season} ${submission.fileset.offering.semester.year} - 
+		<a href="${h.url_for(controller='fileset', action='list_fileset', id=submission.fileset.id)}">view file set</a>
+		<br />
+		<ul>
+% for file in submission.submissionFiles:
+			<li>
+				<a href="${h.url_for(controller='fileset', action='view_file', id=file.id)}">${file.name}</a>	
+			</li>
+% endfor
+		</ul>
+	</li>
+% endfor
+</ul>
+<br /><br /><br />
+		<label for="minimum_match_score">Filter matches to minimum score:</label>
+		${h.select(
+			"minimum_match_score",
+			id='minimum_match_score',
+			options = range(100,-1,-1),
+			selected_values = 0
+		)}
+		<br />
+<%
+max_matches_per_assignment_options = [(-1,"All Matches")]
+max_matches_per_assignment_options.extend(range(1,101))
+%>
+		<label for="max_matches_per_assignment">Number of matches to display per analysis:</label>
+		${h.select(
+			"max_matches_per_assignment",
+			id='max_matches_per_assignment',
+			options = max_matches_per_assignment_options,
+			selected_values = -1
+		)}
+		<br />
+		<input type="button" class="btn" value="Filter" onclick="javascript:getMatches()"/>
+<br /><br /><br />
+<div id="matches">
+
+</div>
+
+<%def name="title()">View History for ${c.student.netid} - ${parent.title()}</%def>
+<%def name="js()">
+    ${parent.js()}
+	
+	<script type="text/javascript">
+		var Dom = YAHOO.util.Dom;
+		
+		var getMatches = function() {
+			var callback = {
+				success: function(o) {
+					Dom.get('matches').innerHTML = o.responseText;
+				},
+				failure: function(o) {
+					//fail silently
+					//alert("Failed to retrieve required information.");
+				}
+			};
+			var minimum_match_score = Dom.get("minimum_match_score").value;
+			var max_matches_per_assignment = Dom.get("max_matches_per_assignment").value;
+			var url = "${h.url_for(controller="history", action="get_matches", id=c.student.netid)}?minimum_match_score="+minimum_match_score+"&max_matches_per_assignment="+max_matches_per_assignment;
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};
+		
+		function setupToggles() {
+			
+			var ph_showing = false;
+			
+			$("#ph_toggle_img").click(function(){
+			    if(ph_showing == false) {
+					$("#ph_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1downarrow.png")}");
+				} else {
+					$("#ph_toggle_img").attr("src", "${h.url_for("/crystal_project/16x16/actions/1uparrow.png")}");
+				}
+				ph_showing = !ph_showing;
+				$('#ph_data').toggle('slow', function() { });
+			});
+			
+			$("#ph_toggle_img").css('cursor', 'pointer');
+		}
+		
+		var docReady = function(){
+			setupToggles();
+			getMatches();
+		}
+		
+		$(document).ready(docReady);
+	</script>
+</%def>

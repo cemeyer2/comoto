@@ -1,0 +1,13 @@
+<%
+div_id = h.__rand_string(32)
+%>
+
+<div id="${div_id}">
+
+<h3 class="title">Export Match</h3>
+<form method=POST action="${h.url_for(controller="view_analysis", action="export_moss_match", id=c.match_id)}">
+	${h.field("Anonymize match before export?", h.checkbox(name="anonymize", checked=False))}
+	<br />
+	<br />
+	<input type="submit" value="Download Match"/>
+</form>

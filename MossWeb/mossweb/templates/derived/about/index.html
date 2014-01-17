@@ -1,0 +1,236 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">About CoMoTo</h3>
+</%def>
+<br />
+<p><h4>Current version:</h4> ${c.revision}</p>
+<br />
+
+<p><b>Designed and implemented by the CoMoTo team:</b> </p>
+
+Current:
+<ul>
+<li>Charlie Meyer - <a href="mailto:cemeyer2@illinois.edu">cemeyer2@illinois.edu</a></li>
+<li>Jon Tedesco - <a href="mailto:tedesco1@illinois.edu">tedesco1@illinois.edu</a></li>
+<li>Cinda Heeren - <a href="mailto:c-heeren@illinois.edu">c-heeren@illinois.edu</a></li>
+</ul>
+Former:
+<ul>
+<li>Joe Gonzalez - <a href="mailto:gonzale5@illinois.edu">gonzale5@illinois.edu</a></li>
+<li>Eric Shaffer - <a href="mailto:shaffer1@illinois.edu">shaffer1@illinois.edu</a></li>
+<li>Alex Lambert - <a href="mailto:alex@alexlambert.com">alex@alexlambert.com</a></li>
+</ul>
+<br /><br /><br />
+% if session.has_key('flash'):
+    <div id="flash" style="color:red;"><p>${session.get('flash')}</p></div>
+    <%
+        del session['flash']
+        session.save()
+    %>
+% else:
+<h3>Feedback:</h3>
+${h.form_start(h.url_for(controller='about', action='feedback', id=None), method="POST", name="feedback_form", id="feedback_form")}
+	${h.field("Enter your comments", h.textarea(name='feedback', cols=50, rows=10), required=False)}
+    ${h.field(field=h.submit(value="Submit", name='submit'))}
+${h.form_end()}
+% endif
+<br /><br /><br />
+<h3>CoMoTo Users Mailing List:</h3>
+Join the CoMoTo users mailing list at <a href="http://lists.cs.uiuc.edu/mailman/listinfo/comoto">http://lists.cs.uiuc.edu/mailman/listinfo/comoto</a>
+<br /><br /><br />
+<h3>Release Notes:</h3>
+<br/>
+<br/>
+5/3/12:
+<ul>
+    <li>Added optional fisheye focus to viz</li>
+    <li>Removed viz popups in favor of Bootstrap popovers</li>
+    <li>Fixed viz layout to properly layout only data that will be shown</li>
+    <li>Fixed style inconsistancies resulting from including Bootstrap</li>
+</ul>
+4/17/12:
+<ul>
+	<li>Viz JavaScripts now self hosted to eliminate insecure warnings on webkit browsers.</li>
+	<li>All JavaScript files are now minified to reduce loading times</li>
+	<li>All JavaScript libraries have been updated to the latest compatible versions.</li>
+</ul>
+4/16/12:
+<ul>
+    <li>Comoto 1.5 released!</li>
+    <li>Dynamic visualization is now live. In order for an analysis to appear in the visualization menu, it needs to be pruned to a specific semester. This can be done in the textual view of the analysis under the filtering options. Links to launch the viz are shown on the list analysis page as well as the textual analysis report page only for analyses that have been pruned to a specific semester.</li>
+    <li>JavaScript includes have been fixed to eliminate SSL errors shown in some browsers.</li>
+</ul>
+2/10/11:
+<ul>
+	<li>Non-FERPA protected student data is now displayed on each student's history page.</li>
+</ul>
+2/8/11:
+<ul>
+	<li>Added new <a href="${h.url_for(controller="about", action="api")}#getFileSets">getFileSets</a> API method.</li>
+</ul>
+2/1/11:
+<ul>
+	<li>Users can now export, optionally anonymized, moss output files.</li>
+</ul>
+1/12/11:
+<ul>
+	<li>Added new <a href="${h.url_for(controller="about", action="api")}#getStudents">getStudents</a> API method.</li>
+	<li>API method <a href="${h.url_for(controller="about", action="api")}#getMossAnalysis">getMossAnalysis</a> now returns if
+		it was pruned and the identifier of the pruned offering if it exists and -1 otherwise.	
+	</li>
+</ul>
+12/21/10:
+<ul>
+	<li>Major database schema changes that required resetting all data and starting from scratch. All future schema
+		changes should be able to be migrated smoothly.	
+	</li>
+	<li>Database backend now uses faster engine.</li>
+	<li>Performance improvements when importing sets of files with many students new to the system.</li>
+</ul>
+12/10/10:
+<ul>
+	<li>Performance enhancements for roster view when viewing large course rosters</li>
+	<li>API method <a href="${h.url_for(controller="about", action="api")}#getFileSet">getFileSet</a>
+			now has a different signature. Setting the full_submission_info parameter to True will return full submission
+			structs for each submission in the file set, including basic student information structs if the submission
+			is a student submission.
+	</li>
+	<li>API method <a href="${h.url_for(controller="about", action="api")}#getSubmission">getSubmission</a>
+			now has an optional second parameter that when set to True will return a full student struct for the student
+			that corresponds to that submission if the submission is a student submission.
+	</li>
+	<li>There is now an integrated tool to test the API on the <a href="${h.url_for(controller="about", action="api")}">API documentation page</a>.</li>
+</ul>
+12/07/10:
+<ul>
+	<li>University class rosters are now integrated into CoMoTo where available. To use this feature, click on one of your courses
+			on the <a href="${h.url_for("/")}">home page</a> and then click on view roster next to the offering of the course for which
+			you want to view the course roster.
+	</li>
+	<li>
+		API methods:
+		<ul>
+			<li><a href="${h.url_for(controller="about", action="api")}#getCourse">getCourse</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getCourses">getCourses</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getFileSet">getFileSet</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getOffering">getOffering</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getStudent">getStudent</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getStudentByNetid">getStudentByNetid</a></li>
+		</ul>
+		all now return their UIUC AD LDAP dn (distinguished name) for their respective objects if they have been linked.
+	</li>
+	<li>
+		API methods:
+		<ul>
+			<li><a href="${h.url_for(controller="about", action="api")}#getCourse">getCourse</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getCourses">getCourses</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getFileSet">getFileSet</a></li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getOffering">getOffering</a></li>
+		</ul>
+		all now return their their UIUC AD LDAP information for the offerings returned in the offering_info field and identifiers for each
+		student in their rosters if the optional boolean parameter in each method is set to True.
+	</li>
+</ul>
+12/06/10:
+<ul>
+	<li>API stability enhancements. All API functions now pass the test suite.</li>
+	<li>Users can now download source files from the view file page</li>
+	<li>Users can now download submissions from the list file set page</li>
+	<li>Users can now download entire file sets from the list file sets page</li>
+</ul>
+11/30/10:
+<ul>
+	<li>Analysis can now be filtered to limit the number of matches that a given student will appear in, which in some cases helps to reduce clutter</li>
+	<li>Static resources are now cached to reduce page load times</li>
+	<li>
+		API Enhancements:
+		<ul>
+			<li><a href="${h.url_for(controller="about", action="api")}#getMossAnalysis">getMossAnalysis</a> now includes the ability to return categorized matches as seen on the view analysis page as well as the same filtering abilities as on the view analysis page</li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getStudent">getStudent</a> now includes the ability to filter the returned list of historical matches</li>
+			<li><a href="${h.url_for(controller="about", action="api")}#getStudentByNetid">getStudentByNetid</a> now includes the ability to filter the returned list of historical matches</li>
+		</ul>
+	</li>
+</ul>
+11/29/10:
+<ul>
+	<li>Documented the XML-RPC API. Documentation is available <a href="${h.url_for(controller="about", action="api")}">here</a>.</li>
+</ul>
+11/9/10:
+<ul>
+	<li>Various UI enhancements, especially on view analysis pages</li>
+	<li>Increased the maximum value for moss -m parameter</li>
+	<li>Fixed bug that prevented matches from showing up from a student if that student appeared in multiple semesters in the same analysis run</li>
+</ul>
+11/5/10:
+<ul>
+	<li>Fixed bug that sometimes prevented status from appearing when importing files or running analysis</li>
+</ul>
+11/4/10:
+<ul>
+	<li>added a variety of new methods to API to allow for accessing of database objects by id</li>
+	<li>static files are now gzip compressed if supported by client browser</li>
+	<li>partners can now be parsed and displayed in analysis results</li>
+	<li>enhanced analysis view ui to include floating links to sections of analysis results</li>
+</ul>
+10/27/10:
+<ul>
+	<li>added getStudentByNetid API method call</li>
+	<li>a few minor UI bug fixes</li>
+</ul>
+10/26/10:
+<ul>
+	<li>API re-worked to raise XML-RPC faults in most error conditions or security check failures</li>
+	<li>getStudent API method now takes an optional boolean parameter to indicate if the requested student's history should also be returned (defaults to False)</li>
+	<li>API url simplified, is now just /api rather than /api/api</li>
+	<li>Some JavaScript libraries are now loaded from Google, reducing page load times</li>
+	<li>View file page enhanced to show additional data</li>
+	<li>E-Mailing of students from CoMoTo is now all done via AJAX</li>
+	<li>Range of maximum moss matches to calculate when running analysis has been reduced from 5000 to 2000</li>
+	<li>Static graph generation now incorporated into view analysis page</li>
+</ul>
+10/15/10:
+<ul>
+	<li>Analysis can now be deleted from the system</li>
+	<li>All delete/remove tasks now require user confirmation</li>
+	<li>Fixed bug preventing files with non-ASCII characters from being imported properly</li>
+	<li>Display of analysis can now be filtered to show matches only scoring above a given threshold</li>
+	<li>UI tweaks on analysis display to indicate when no matches are available</li>
+	<li>Added UI enhancement to filter files page to prevent user causing application error</li>
+	<li>Users can now directly email their students that appear in report results directly from CoMoTo</li>
+</ul>
+10/12/10:
+<ul>
+<li>Student history data is now available. Clicking on the history links will allow you to search for students to display their
+history in CoMoTo. Clicking on a student's netid anywhere in CoMoTo will also display their history in CoMoTo.</li>
+<li>Fixed bug that prevented importing base files and solution files via svn</li>
+<li>Solution and base file offerings are automatically created for new courses when they are created</li>
+<li>Analysis can be pruned down to one semester such that only matches that have a student in the semester that you prune to appear in the analysis results</li> 
+</ul>
+10/11/10:
+<ul>
+<li>Bug fixed in dynamic moss analysis display</li>
+<li>Analysis results now display in sorted order from largest to smallest match percentage</li>
+<li>Application now supports uploading instructor supplied (base) files that can be included in analysis to narrow down meaningful results</li>
+<li>Updated API to include record types on polymorphic objects</li>
+<li>Revamped API calls so there should be no more 500 errors. Invalid data will be returned as empty objects with the same type as the method
+signature specifies. Invalid identifiers in returned data are now all set to -1 by default</li>
+</ul>
+10/10/10:
+<ul>
+<li>database schema migrated so that assignment names and file names are now 1024 characters max length, rather than 40</li>
+<li>moss result pages (the highlighted code) is displayed dynamically from the database rather than from static files</li>
+<li>first pass API implemented...right now it is data access only, there are no features to modify data in the db</li>
+<li>any new reports that are run no longer are anonymized. this is because we do analysis in house, so there is no ferpa concerns</li>
+<li>custom error handling - rather than getting default 404, 403, and 500 errors from apache, they are now styled using the same templates that comoto uses to render the rest of the app</li>
+<li>new about page replacing the old footer</li>
+<li>place holder page put in for API documentation</li>
+</ul>
+<br /><br /><br />
+<h3>Built on:</h3>
+<br /><br />
+<img src="${h.url_for("/pylons-logo.gif")}" alt="Pylons" />
+<%def name="title()">About - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+</%def>

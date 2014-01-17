@@ -1,0 +1,51 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">View File Sets</h3>
+</%def>
+<br/>
+<br/>
+Your File Sets:</br>
+<br/>
+<ul>
+% for course in c.courses:
+	<li>
+		${course.name}<br />
+		<ul>
+% for offering in course.offerings:
+			<li>
+			% if offering.semester.row_type=='semester':
+				<a href="${h.url_for(controller="offering", action="view_roster", id=offering.id)}">${offering.semester.to_str()}</a>
+			% else:
+				${offering.semester.to_str()}
+			%endif
+			<br />
+				<ul>
+% for fileset in offering.filesets:
+% if fileset.isComplete:
+					<li>
+						<a href="${h.url_for(controller='fileset', action='list_fileset', id=fileset.id)}">${fileset.name}</a> - 
+						${h.facebox_ajax("download",  h.url_for(controller="fileset", action="download_fileset_ajax", id=fileset.id))} - 
+						<a href="#" onclick="javascript:confirmDelete('${h.url_for(controller='fileset', action='remove_fileset', id=fileset.id)}')">delete</a>
+					</li>	
+% endif				
+% endfor
+				</ul>
+			</li>
+% endfor
+		</ul>
+	</li>
+% endfor
+</ul>
+<%def name="title()">View File Sets - ${parent.title()}</%def>
+<%def name="js()">
+<script>
+			var confirmDelete = function(url) {
+				var shouldDelete = confirm("Are you sure you want to delete this fileset? This cannot be undone.");
+				if(shouldDelete) {
+					window.location = url;
+				}
+			};
+		</script>
+        ${parent.js()}
+</%def>

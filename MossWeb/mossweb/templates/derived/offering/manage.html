@@ -1,0 +1,53 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">Manage Offering: ${c.offering.to_str()}</h3>
+</%def>
+% if len(c.offerings_dict) > 0:
+	Existing Sections Linked:<br />
+	<ul>
+	% for dn,name in c.offerings_dict.items():
+	<li>
+		${name[0]} - <a href="${h.url_for(controller="offering", action="unlink_dn", id=c.offering.id, dn=dn)}">unlink</a>
+	</li>
+	% endfor
+	</ul>
+	<br /><br />
+% endif
+% if len(c.potential_offerings_dict.items()) > 0:
+	Link a new section:<br />
+	${h.form_start(h.url_for(controller='offering', action='link_dn', id=c.offering.id), method="POST")}
+	    ${h.field(
+			"Section",
+			h.select(
+				"dn",
+				id='dn',
+				options = map( lambda tup: (tup[0], tup[1][0]),c.potential_offerings_dict.items()),
+				selected_values = [],
+			),
+		)}
+	    ${h.field(field=h.submit(value="Link Section", name='submit'))}
+	${h.form_end()}
+	<br /><br />
+	${h.form_start(h.url_for(controller='offering', action='link_dn', id=c.offering.id), method="POST")}
+		${h.hidden(name="count", value=str(len(c.potential_offerings_dict)))}
+		
+		% for i in range(0, len(c.potential_offerings_dict)):
+		
+			${h.hidden(name="dn"+str(i), value=str(c.potential_offerings_dict.keys()[i] ) ) }
+		
+		% endfor
+		
+	    ${h.field(field=h.submit(value="Link All Sections", name='submit'))}
+	${h.form_end()}
+% elif len(c.potential_offerings_dict.items()) == 0 and len(c.offering.dns) == 0:
+	There are no sections in the university database that match this offering.
+% else:
+	You have linked all sections in the university database for this offering to it already.
+% endif
+<br /><br /><br />
+<a href="${h.url_for(controller="course", action="manage_offerings", id=c.offering.course.id)}">back</a>
+
+<%def name="js()">
+    ${parent.js()}
+</%def>

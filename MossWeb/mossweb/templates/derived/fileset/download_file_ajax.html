@@ -1,0 +1,18 @@
+download ${c.file.name}:<br /><br />
+
+<form method=POST action="${h.url_for(controller="fileset", action="download_file", id=c.file.id)}">
+	<label for="format">Format: </label>
+	<select id="format", name="format">
+		<option value="raw">Plain Text</option>
+		<option value="html">Highlighted HTML source</option>
+		<option value="latex">Highlighted LaTeX source</option>
+		<option value="jpeg">Highlighted JPEG image</option>
+		<option value="png">Highlighted PNG image</option>
+		<option value="bmp">Highlighted BMP image</option>
+		<option value="gif">Highlighted GIF image</option>
+		<option value="svg">Highlighted SVG image</option>
+		<option value="rtf">Highlighted RTF Document</option>
+	</select>
+	<br/>
+	<input type="submit" value="download"/>
+</form>

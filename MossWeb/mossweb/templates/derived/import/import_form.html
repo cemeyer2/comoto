@@ -1,0 +1,319 @@
+<%inherit file="/base/compromise.html" />
+<%
+unique_id = h.__rand_string(32)
+%>
+<%def name="heading()">
+    <h3 class="title">Import Files</h3>
+</%def>
+
+${h.form(h.url_for(controller='import', action='filter_files'), multipart=True, name="import_form", id="import_form")}
+<fieldset>
+	
+
+	<label for="fileset_name">Name For File Set</label>
+	${h.text(name='fileset_name')}
+	<form:error name="fileset_name"/>
+    &nbsp;
+	${h.facebox('help', 'This is the name that the set of files you are importing will have. It should be descriptive of the files you are importing, such as MP1 if you are importing an assignment called MP1.')}
+	<br />
+
+	<label for="course_id">Course</label>
+	${h.select(
+			"course_id",
+			id='course_id',
+			options = map(lambda x: (x.id, x.name), c.user.courses),
+			selected_values = [],
+			onchange="getOfferings();",
+			)}
+	<form:error name="course_id"/>
+    &nbsp;
+	${h.facebox('help',"This is the course that the files that you are importing will be associated with. Note: only the courses to which you are associated are listed here.")}
+	<br />
+
+	${h.hidden("is_solution","",id="is_solution")}
+	
+	<label for="offering_id">Offering</label>
+	${h.select(
+			"offering_id",
+			id='offering_id',
+			options = [],
+			selected_values = [],
+			onchange="querySolution()",
+		)}
+    &nbsp;
+    ${h.facebox('help','This is the offering for the course selected above that the files you are importing will be associated with. Only offerings that have been added to the course by you or another course staff member will be visible here. To add new offerings, go to the home page and click on the course you wish to add offerings to. The base and solution offerings are created by default. They allow you to specify that the files you are about to import are either solutions or instructor-supplied base files.')}
+    <br />
+
+	<label for="type">Type</label>
+	${h.select(
+			"type",
+			id='type',
+			options = [("archive","From Archive File"),("svn", "From SVN")],
+			selected_values = [],
+			onchange="toggle_type_fields()"
+		)}
+    &nbsp;
+    ${h.facebox('help','CoMoTo offers two different options for importing files into the system.<br /><br /><ul><li><b>Archive File</b> - Using this option, you can upload an archive file containing files that is either in zip or tar.gz format.<br /><em>Note</em>: CoMoTo expects the archive file you upload to contain at its root 1 directory per student named by some student identifier, such as UIUC netid.</li><li><b>SVN</b> - Using this option, you can directly import files into CoMoTo from files that already exist in a Subversion repository.</li></ul>')}
+    <br /><br />
+
+    ## Archive import fields
+	<div id="archive_fields">
+
+	<label for="file">File</label>
+	${h.file('file')}<br />
+	
+	<label for="archive_subdir">Subdirectory containing files to import</label>
+    ${h.text(name='archive_subdir')}
+	<form:error name="archive_subdir"/>
+        &nbsp;
+	${h.facebox('help', "This is the subdirectory in each students folder inside the archive file that contains files to import. For instance, if your archive file has at its root 1 directory per student as required and inside each of those folders another directory for the particular assignment you wish to import, for example named MP1, you would enter MP1 here.")}
+	<br />
+	
+	${h.submit(name="archive_action", value="Import Files From Archive", id="archive_submit")}<br />
+	
+	</div>
+	
+##	SVN Import Fields
+	<div id="svn_fields" style="display: none;">
+	
+	<label for="svn_url">SVN Base URL</label><br />
+    ${h.text(name='svn_url', onkeyup='generate_svn_url_template()')}
+	<form:error name="svn_url"/>
+	${h.facebox('help', "This should be the URL to the root of the repository containing the files you wish to import into CoMoTo. As you enter the url in this field, a template will be generated below indicating how CoMoTo will search your repository to locate files to import. If you are importing solution or base files, then this should be the path to the directory root that contains those files.")}
+	<br />
+	
+	<label for="svn_subdir">Subdirectory containing files to import</label><br />
+    ${h.text(name='svn_subdir', onkeyup='generate_svn_url_template()')}
+	<form:error name="svn_subdir"/>
+	${h.facebox('help', "This should be the subdirectory inside of the folder of each student that contains the files you wish to import into CoMoTo. You should leave this blank if you are importing solution or base files. As you enter the url in this field, a template will be generated below indicating how CoMoTo will search your repository to locate files to import.")}
+	<br />
+	
+	<label for="svn_url_template">SVN URL Template</label><br />
+	${h.literal("<span id='svn_url_template'></span>")}<br />
+	
+	<label for="svn_rev_time">SVN Revision Timestamp</label><br />
+	${h.text(name='svn_rev_time')}
+	<form:error name="svn_rev_time"/>
+	${h.facebox('help', "By choosing a date and time here, you can import files from your SVN repository as they were in the repository at that chosen date and time.")}
+	<br />
+	
+	<label for="svn_username">SVN Username</label><br />
+	${h.text(name='svn_username', onkeyup='modifiedSVNLoginCredentialsHandler()')}
+	<form:error name="svn_username"/>
+	${h.facebox('help', "This is the username that will grant access to the SVN repository entered above. This information is not stored, logged, or cached by any means, but if you are connecting to a SVN repository that does not use encryption, your credentials will be sent unencrypted from the CoMoTo server to the remote repository.")}
+	<br />
+	
+	<label for="svn_password">SVN Password</label><br />
+	${h.password(name='svn_password', onkeyup='modifiedSVNLoginCredentialsHandler()')}
+	<form:error name="svn_password"/>
+	${h.facebox('help', "This is the SVN password for the username entered above. This information is not stored, logged, or cached by any means, but if you are connecting to a SVN repository that does not use encryption, your credentials will be sent unencrypted from the CoMoTo server to the remote repository.")}
+	<br />
+	
+	<input type="button" class="btn" name="svn_login" value="Check SVN Login Credentials", onclick="tryLogin()"/>
+	${h.facebox('help', "Clicking this button will make a single request to the remote SVN server to verify that you have entered proper login credentials. If successful, you will be allowed to proceed. This manual check is necessary due to the way that the Subversion library that CoMoTo uses is implemented.")}
+	<br/><br />
+	
+	${h.submit(name="svn_action", value="Import Files From SVN", id="svn_submit", style="display:none;")}<br />
+	${h.hidden(name="unique_id", id="unique_id", value=unique_id)}
+	</div>
+
+</fieldset>
+
+<div id="loading" style="display:none;">
+<div id="status">
+Status: <div id="status_content"></div><br /><br />
+</div>
+${h.facebox('taking a long time to load?', "This page can take a long time to submit and move on to the next page if you are importing many files or are importing from a SVN server not on the UIUC network. When running SVN imports, CoMoTo makes many simultaneous requests to the SVN server to fetch files, but it can still be a lengthy process if there are many files in the repository.<br /><br />Be patient...CoMoTo is not frozen or hanging, its working hard in the background to import your files!")}<br />
+${h.image(h.url_for("/loading.gif"), "Importing...")}
+</div>
+
+${h.end_form()}
+<script>
+status_url = "${h.url_for(controller="import", action="status", id=unique_id)}";
+</script>
+<%def name="title()">Import Files - ${parent.title()}</%def>
+<%def name="js()">
+        ${parent.js()}
+		
+		
+	${h.javascript_link(h.url_for('/jquery_ui_datepicker/jquery_ui_datepicker.js'))}
+	
+
+	<script type="text/javascript">
+		
+		var Dom = YAHOO.util.Dom;
+		
+		var getOfferings = function() {
+			var callback = {
+				success: function(o) {
+					Dom.get('offering_id').innerHTML = o.responseText;
+					querySolution();
+				},
+				failure: function(o) {
+					alert("Failed to retrieve required information.");
+				}
+			};
+			var url = "${h.url_for(controller="import", action="get_offerings_for_course")}" + "/"+Dom.get('course_id').value
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};
+		
+		var getStatus = function() {
+			var callback = {
+				success: function(o) {
+					Dom.get('status_content').innerHTML = o.responseText;
+				},
+				failure: function(o) {
+					//fail silently
+					//alert("Failed to retrieve required information.");
+				}
+			};
+			var url = status_url;
+			var transaction = YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
+		};
+		
+		var tryLogin = function() {
+			var callback = {
+				success: function(o) {
+					hide("loading");
+					var json = YAHOO.lang.JSON.parse(o.responseText);
+					result = json.result;
+					if(result == true) {
+						show('svn_submit');
+					} else {
+						hide('svn_submit');
+						alert('Incorrect SVN Login Credentials');
+					}
+				},
+				failure: function(o) {
+					alert("Failed to login.");
+					hide("loading");
+				}
+			};
+			show("loading");
+			var url = "${h.url_for(controller="import", action="try_svn_login")}";
+			var postdata = "username="+Dom.get('svn_username').value+"&password="+Dom.get('svn_password').value+"&url="+Dom.get('svn_url').value;
+			var transaction = YAHOO.util.Connect.asyncRequest('POST', url, callback, postdata);
+		};
+
+		var hide = function(id) {
+        	Dom.setStyle(id, 'display', 'none');
+    	};
+		
+		var show = function(id) {
+        	Dom.setStyle(id, 'display', 'block');
+    	};
+		
+		var toggle_type_fields = function() {
+			var type_element = Dom.get('type');
+			var type = type_element.value;
+			initDate();
+			if(type == "svn") {
+				hide("archive_fields");
+				show("svn_fields");
+			} else if(type == "archive") {
+				hide("svn_fields");
+				show("archive_fields")
+			}
+		};
+		
+		var toggle_offering = function() {
+			var is_solution = Dom.get('is_solution').value;
+			if(is_solution == 0) {
+				show('offering');
+			} else if(is_solution == 1) {
+				hide('offering');
+			}
+		};
+		
+		var querySolution = function () {
+			var offering = Dom.get("offering_id");
+			var selected = offering.options[offering.selectedIndex].innerHTML;
+			if(selected == "Solution") {
+				Dom.get("is_solution").value = "1";
+			} else {
+				Dom.get("is_solution").value = "0";
+			}
+		};
+		
+		var generate_svn_url_template = function() {
+			var svn_base = Dom.get('svn_url').value;
+			var subdir = Dom.get('svn_subdir').value;
+			var offering_element = Dom.get("offering_id");
+			var offering = offering_element.options[offering_element.selectedIndex].innerHTML;
+			var template_element = Dom.get('svn_url_template');
+			
+			var template = "";
+			
+			var isSpecial = offering == "Solution" || offering == "Base Files";
+			
+			if(svn_base.length > 0 && isSpecial == false) {
+				template = template + svn_base + "/{student_netid}";
+				
+				if(subdir.length > 0) {
+					template = template + "/"+subdir+"/";
+				}
+			} else {
+				template = template + svn_base + "/";
+			}
+			
+			
+			modifiedSVNLoginCredentialsHandler()
+			template_element.innerHTML = template;
+		};
+		
+		var modifiedSVNLoginCredentialsHandler = function() {
+			hide('svn_submit');
+		};
+		
+		var submit_handler = function (event) {
+			setInterval ( "getStatus()", 3000 );
+			show("loading");
+			Dom.get("svn_submit").disabled=true;
+			Dom.get("archive_submit").disabled=true;
+		};
+
+        YAHOO.util.Event.on("import_form", "submit", submit_handler);
+		
+		var initDate = function () {
+			var pad = function (input) {
+				if(input < 10) {
+					return "0"+input;
+				} else {
+					return ""+input
+				}
+			};
+			var d = new Date();
+			var year = d.getFullYear();
+			var month = pad(d.getMonth()+1);
+			var day = pad(d.getDate());
+			var hours = pad(d.getHours());
+			var mins = pad(d.getMinutes());
+			var secs = pad(d.getSeconds());
+			var dateStr = year+"-"+month+"-"+day+" "+hours+":"+mins+":"+secs;
+			Dom.get("svn_rev_time").value = dateStr;
+		}
+		
+		var init = function() {
+			getOfferings();
+			toggle_type_fields();
+			generate_svn_url_template();
+			toggle_offering();
+			initDate();
+		};
+		
+		YAHOO.util.Event.onDOMReady(init);
+		
+		$(function() {
+				  $('#svn_rev_time').datetime({
+												userLang	: 'en',
+												americanMode: true,
+											});
+			});
+	</script>
+	
+	${h.javascript_link(h.url_for('/jquery_ui_datepicker/i18n/ui.datepicker-de.js'))}
+	${h.javascript_link(h.url_for('/jquery_ui_datepicker/timepicker_plug/timepicker.js'))}
+	
+	${h.stylesheet_link(h.url_for('/jquery_ui_datepicker/timepicker_plug/css/style.css'))}
+	${h.stylesheet_link(h.url_for('/jquery_ui_datepicker/smothness/jquery_ui_datepicker.css'))}
+</%def>

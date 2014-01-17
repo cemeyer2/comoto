@@ -1,0 +1,21 @@
+install sqlalchemy-migrate:
+	- i added it to the project dependencies, but you probably dont have it yet
+	- run command: sudo easy_install sqlalchemy-migrate==0.6
+	- run command: python manage_migrations_development.py version_control 
+
+
+to migrate to the latest version run commands:
+
+	python manage_migrations_development.py test
+	python manage_migrations_development.py upgrade
+
+
+to add a new migration run command:
+
+	python manage_migrations_development.py script migration_script_name.py
+	edit the corresponding file in migrations_repository/versions/ to match the template of previous migrations, but modified to suit the migration you need to do
+	migrate to the latest version as described above
+
+migration commands help can be gotten by running the command:
+
+	python manage_migrations_development.py

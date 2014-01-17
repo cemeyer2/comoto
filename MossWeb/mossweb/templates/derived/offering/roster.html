@@ -1,0 +1,34 @@
+<%inherit file="/base/compromise.html" />
+
+<%def name="heading()">
+    <h3 class="title">View Roster For: ${c.offering.to_str()}</h3>
+</%def>
+<a href="${h.url_for(controller="course", action="manage_offerings", id=c.offering.course.id)}">back</a>
+<br /><br />
+% if len(c.offering.dns) > 0:
+	<table style='width:800px; z-index:1000'>
+	<tr>
+	<th>Netid</th><th>Name</th><th>Program</th><th>Level</th><th>Left UIUC</th><th></th>
+	</tr>
+	% for student in c.students:
+		<tr>
+		<td><a href="${h.url_for(controller="history", action="view", id=student.netid)}">${student.netid}</a></td>
+		<td>${student.displayName}</td>
+		<td>${student.programName}</td>
+		<td>${student.levelName}</td>
+		<td>${student.leftUIUC}</td>
+		<td><a href="${h.url_for(controller="history", action="view", id=student.netid)}">history</a></td>
+		</tr>
+	% endfor
+	</table>
+% else:
+	You have not linked any sections from the university database to this offering of this course. You must do this first
+	before you can view the roster. <a href="${h.url_for(controller="offering", action="manage", id=c.offering.id)}">Click here</a> 
+	to link sections to this offering.
+% endif
+<br /><br />
+<a href="${h.url_for(controller="course", action="manage_offerings", id=c.offering.course.id)}">back</a>
+
+<%def name="js()">
+    ${parent.js()}
+</%def>

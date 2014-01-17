@@ -1,0 +1,159 @@
+/**
+ * Widen header
+ */
+#header {
+    width: 90%;
+    height: 105px;
+    margin: 0 auto;
+    background: white;
+    border-right: black 1px solid;
+    border-left: black 1px solid;
+}
+
+/**
+ * Widen menu
+ */
+#menu {
+    width: 90%;
+    height: 44px;
+    background: url(../../viz_images/img03.jpg) repeat-x left top;
+    margin: 0 auto;
+    padding-left: 1px;
+    border-right: black 1px solid;
+    border-left: black 1px solid;
+}
+
+#menu a:hover {
+    background: #FF7900;
+    text-decoration: none;
+}
+
+#menu .first {
+    margin-right: 3px;
+    background: #FF7900;
+}
+
+.checkbox {
+    display: inline-block;
+}
+label {
+    margin-bottom: 0px;
+}
+
+
+/**
+ * Widen wrapper, page, & content
+ */
+
+#wrapper {
+    min-height: 600px;
+    height:100%;
+    width: 90%;
+    margin: 0 auto;
+    background: white;
+    border-right: black 1px solid;
+    border-left: black 1px solid;
+}
+
+#page {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+}
+
+#content {
+    width: 100%;
+    display: none;
+    text-align: center;
+}
+
+.post {
+    padding-bottom: 20px;
+}
+
+/**
+ * Footer
+ */
+
+#footer {
+    width: 90%;
+    margin: auto;
+    padding: 20px 0 20px 0;
+    border-right: black 1px solid;
+    border-left: black 1px solid;
+}
+
+/**
+ * Sidebar styling
+ */
+
+#right-sidebar {
+    float: right;
+    width: 15%;
+    padding: 20px;
+    border-left: #444 1px solid;
+    display: none;
+    overflow: auto;
+}
+
+#left-sidebar  {
+    float: left;
+    width: 15%;
+    padding: 20px;
+    border-right: #444 1px solid;
+    display: none;
+    overflow: auto;
+}
+
+#left-sidebar h2, #right-sidebar h2 {
+    letter-spacing: -.5px;
+    color: #444;
+}
+
+#left-sidebar p, #right-sidebar p {
+    padding-bottom: 20px;
+    text-align: justify;
+}
+
+#left-sidebar a, #right-sidebar a {
+    color: #000;
+    border: none;
+}
+
+#left-sidebar a:hover, #right-sidebar a:hover {
+    text-decoration: underline;
+    color: #787878;
+}
+
+
+/**
+ * Graph styling
+ */
+circle.node {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+line.link {
+    stroke: #999;
+    stroke-opacity: .6;
+}
+
+.popover-inner {
+    padding: 2px;
+}
+
+.header {
+    font-weight: bold;
+    padding-right: 10px;
+}
+
+.closeButton, .addButton {
+    float: right;
+}
+
+.addButton.close {
+    padding-top:3px;
+    margin-right:5px;
+}
+
